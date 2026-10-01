@@ -182,13 +182,26 @@ def apk_latest():
 
 @app.get("/api/apk/download")
 def apk_download():
-    """下载 APK：Content-Type 为 apk，手机浏览器访问直接触发下载。"""
+    """下载 APK：Content-Type 为 apk，手机浏览器访问直接触发下载。
+
+    文件名带版本号（cantonese-lyrics-v1.2.apk）+ 禁缓存头：
+    避免手机把下载目录里旧版本同名文件（cantonese-lyrics.apk）当成新包安装，
+    也避免浏览器/下载管理器命中缓存下发旧包。
+    """
     if not _APK_FILE.exists():
         raise HTTPException(status_code=404, detail="APK 未部署")
+    meta = _apk_meta()
+    ver = meta.get("versionName", "0")
+    filename = f"cantonese-lyrics-v{ver}.apk"
     return FileResponse(
         path=_APK_FILE,
         media_type="application/vnd.android.package-archive",
-        filename=_APK_FILE.name,
+        filename=filename,
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
     )
 
 
@@ -199,6 +212,7 @@ def apk_page():
         raise HTTPException(status_code=404, detail="APK 尚未部署")
     meta = _apk_meta()
     version = meta.get("versionName", "?")
+    code = meta.get("versionCode", 0)
     size_mb = f"{meta['size'] / 1048576:.1f}" if meta.get("size") else "?"
     changelog = meta.get("changelog", "")
     changelog_html = f'<div class="log">{changelog}</div>' if changelog else ""
@@ -214,7 +228,7 @@ def apk_page():
 <div class="card">
   <h1>粤语歌词</h1>
   <div class="ver">版本 {version} · {size_mb} MB</div>
-  <a class="btn" href="/api/apk/download">下载并安装</a>
+  <a class="btn" href="/api/apk/download?v={code}">下载并安装</a>
   {changelog_html}
   <div class="note">下载后在文件列表点击 APK 安装；<br>如提示「未知来源应用」，请在设置中允许。</div>
 </div>

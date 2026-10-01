@@ -14,12 +14,15 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.loomz.cantonese.lyrics.data.AppSettings
+import com.loomz.cantonese.lyrics.data.AppUpdater
 import com.loomz.cantonese.lyrics.data.LyricsApiClient
 import com.loomz.cantonese.lyrics.data.SettingsStore
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +53,59 @@ fun SettingsScreen(context: android.content.Context, onBack: () -> Unit) {
     var testing by remember { mutableStateOf(false) }
     var testResult by remember { mutableStateOf<String?>(null) }
     var saved by remember { mutableStateOf(false) }
+
+    // ── 版本升级 ──
+    val currentCode = remember { AppUpdater.currentVersionCode(context) }
+    val currentName = remember { AppUpdater.currentVersionName(context) }
+    var checking by remember { mutableStateOf(false) }
+    var updateStatus by remember { mutableStateOf<String?>(null) }
+    var updateInfo by remember { mutableStateOf<AppUpdater.ApkInfo?>(null) }
+    var downloading by remember { mutableStateOf(false) }
+    var progress by remember { mutableStateOf(0) }
+    var needPermission by remember { mutableStateOf(false) }
+
+    fun checkUpdate() {
+        if (checking) return
+        checking = true
+        updateStatus = null
+        scope.launch {
+            val info = withContext(Dispatchers.IO) { AppUpdater.checkLatest() }
+            checking = false
+            when {
+                info == null -> updateStatus = "检查失败（服务未部署 APK 或网络问题）"
+                info.versionCode <= currentCode -> updateStatus = "已是最新版本（v${info.versionName}）"
+                else -> {
+                    needPermission = !AppUpdater.canInstall(context)
+                    updateInfo = info
+                }
+            }
+        }
+    }
+
+    fun downloadAndInstall(info: AppUpdater.ApkInfo) {
+        if (downloading) return
+        // 未允许「未知来源应用」时先跳系统设置，允许后返回再点一次
+        if (!AppUpdater.canInstall(context)) {
+            AppUpdater.openInstallPermission(context)
+            needPermission = true
+            return
+        }
+        downloading = true
+        progress = 0
+        scope.launch {
+            try {
+                val file = withContext(Dispatchers.IO) {
+                    AppUpdater.download(context, info) { p -> progress = p }
+                }
+                AppUpdater.launchInstall(context, file)
+                updateInfo = null
+            } catch (e: Exception) {
+                updateStatus = "下载失败：${e.message}"
+            } finally {
+                downloading = false
+            }
+        }
+    }
 
     fun save() {
         SettingsStore.saveSettings(
@@ -159,11 +216,41 @@ fun SettingsScreen(context: android.content.Context, onBack: () -> Unit) {
                 }
             }
 
+            // ── 版本升级 ──
+            item {
+                Column {
+                    Text("版本升级", color = Chrome.text, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "当前版本 v$currentName（code $currentCode）",
+                        color = Chrome.muted,
+                        fontSize = 12.sp
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = { checkUpdate() },
+                        enabled = !checking,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(if (checking) "检查中…" else "升级版本", color = Chrome.text)
+                    }
+                    if (updateStatus != null) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            updateStatus!!,
+                            color = if (updateStatus!!.startsWith("检查失败")) Chrome.error else Chrome.text,
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
             // ── 保存 / 测试 ──
             item {
                 Column(
-                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(bottom = 24.dp)
+                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
                 ) {
                     OutlinedButton(onClick = { save() }, modifier = Modifier.fillMaxWidth()) {
                         Text(if (saved) "已保存 ✓" else "保存设置", color = Chrome.text)
@@ -182,6 +269,95 @@ fun SettingsScreen(context: android.content.Context, onBack: () -> Unit) {
                     }
                 }
             }
+
+            // ── 关于（版本号） ──
+            item {
+                Column(
+                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(2.dp),
+                    modifier = Modifier.padding(bottom = 24.dp)
+                ) {
+                    Text("关于", color = Chrome.text, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    Text("粤拼歌词", color = Chrome.muted, fontSize = 13.sp)
+                    Text(
+                        "版本 v$currentName（code $currentCode）",
+                        color = Chrome.muted,
+                        fontSize = 13.sp
+                    )
+                }
+            }
         }
     }
+
+    // ── 更新弹窗 ──
+    if (updateInfo != null) {
+        UpdateDialog(
+            info = updateInfo!!,
+            needPermission = needPermission,
+            downloading = downloading,
+            progress = progress,
+            onDismiss = { if (!downloading) updateInfo = null },
+            onDownload = { downloadAndInstall(updateInfo!!) }
+        )
+    }
+}
+
+/** 版本更新弹窗：版本信息 + 更新说明 + 下载进度 + 安装（固定配色） */
+@Composable
+private fun UpdateDialog(
+    info: AppUpdater.ApkInfo,
+    needPermission: Boolean,
+    downloading: Boolean,
+    progress: Int,
+    onDismiss: () -> Unit,
+    onDownload: () -> Unit
+) {
+    val sizeMb = if (info.size > 0) "${"%.1f".format(info.size / 1048576.0)} MB" else ""
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("发现新版本 v${info.versionName}", color = Chrome.text) },
+        text = {
+            Column {
+                if (info.changelog.isNotBlank()) {
+                    Text(info.changelog, color = Chrome.muted, fontSize = 13.sp)
+                    if (sizeMb.isNotBlank()) Spacer(Modifier.height(4.dp))
+                }
+                if (sizeMb.isNotBlank()) {
+                    Text("大小：$sizeMb", color = Chrome.muted, fontSize = 12.sp)
+                }
+                if (needPermission && !downloading) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "⚠ 需先允许「未知来源应用」。点下方按钮会跳到系统设置，允许后返回再点一次。",
+                        color = Chrome.error,
+                        fontSize = 12.sp
+                    )
+                }
+                if (downloading) {
+                    Spacer(Modifier.height(10.dp))
+                    LinearProgressIndicator(
+                        progress = { progress / 100f },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "下载中 $progress%",
+                        color = Chrome.muted,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDownload, enabled = !downloading) {
+                Text(if (downloading) "下载中…" else "下载并安装", color = Chrome.text)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !downloading) {
+                Text("取消", color = Chrome.muted)
+            }
+        }
+    )
 }

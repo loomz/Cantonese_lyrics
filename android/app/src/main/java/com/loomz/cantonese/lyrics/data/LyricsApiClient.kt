@@ -21,7 +21,8 @@ object LyricsApiClient {
     data class TrackResult(val trackId: String, val title: String, val artist: String)
     data class SearchResult(val provider: String, val results: List<TrackResult>)
 
-    private fun base(): String =
+    /** 歌词服务基地址（供 [AppUpdater] 等复用同一套地址逻辑）。 */
+    internal fun base(): String =
         SettingsStore.settings.apiserverUrl.trim().trimEnd('/').ifEmpty { "http://192.168.3.89:8000" }
 
     /** 连接测试（用已保存的地址） */
@@ -80,7 +81,7 @@ object LyricsApiClient {
 
     // ── 底层 HTTP ──
 
-    private fun get(url: String, connectMs: Int, readMs: Int): String =
+    internal fun get(url: String, connectMs: Int, readMs: Int): String =
         read(open(url, "GET", connectMs, readMs))
 
     private fun post(url: String, payload: String, connectMs: Int, readMs: Int): String {

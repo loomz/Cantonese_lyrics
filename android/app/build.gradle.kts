@@ -12,8 +12,8 @@ android {
         applicationId = "com.loomz.cantonese.lyrics"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.2"
     }
 
     buildTypes {
@@ -44,6 +44,8 @@ dependencies {
     val roomVersion = "2.6.1"
     implementation(platform("androidx.compose:compose-bom:2024.06.00"))
     implementation("androidx.activity:activity-compose:1.9.0")
+    // FileProvider（应用内升级：把下载的 APK 以 content URI 交给安装器）
+    implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")

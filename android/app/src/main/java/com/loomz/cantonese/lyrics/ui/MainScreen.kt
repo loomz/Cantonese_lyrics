@@ -33,6 +33,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -59,7 +60,7 @@ import kotlinx.coroutines.launch
 
 /** 应用入口界面：几乎全屏歌词 + 顶栏 列表/搜索 + 底栏 主题/上一首/下一首/设置 */
 @Composable
-fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit, onOpenEdit: () -> Unit) {
+fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
     val themeIndex = SettingsStore.themeIndex
     val theme = LyricsThemes[themeIndex.coerceIn(0, LyricsThemes.size - 1)]
     val song = LyricsRepository.currentSong
@@ -69,6 +70,9 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit, onOpenEdit:
     var showVersionDialog by remember { mutableStateOf(false) }
     var bannerDismissed by remember(song?.id) { mutableStateOf(false) }
     var bannerSyncing by remember(song?.id) { mutableStateOf(false) }
+    // 编辑态：点「编辑」进入，歌词行可点；点某行弹 4 字段编辑框，保存后自动退出（切歌重置）
+    var editMode by remember(song?.id) { mutableStateOf(false) }
+    var editingLineIndex by remember { mutableStateOf<Int?>(null) }
 
     Box(Modifier.fillMaxSize().background(theme.background)) {
         Column(
@@ -92,8 +96,12 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit, onOpenEdit:
                 IconButton(onClick = onOpenSearch) {
                     Icon(Icons.Default.Search, contentDescription = "搜索歌词", tint = Chrome.text)
                 }
-                IconButton(onClick = onOpenEdit, enabled = song != null) {
-                    Icon(Icons.Default.Edit, contentDescription = "编辑歌词", tint = Chrome.text)
+                IconButton(onClick = { if (song != null) editMode = !editMode }, enabled = song != null) {
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = if (editMode) "退出编辑" else "编辑歌词",
+                        tint = if (editMode) Chrome.accent else Chrome.text
+                    )
                 }
                 IconButton(onClick = { showVersionDialog = true }, enabled = song != null) {
                     Icon(Icons.Default.History, contentDescription = "版本管理", tint = Chrome.text)
@@ -155,6 +163,29 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit, onOpenEdit:
                 Spacer(Modifier.height(6.dp))
             }
 
+            // ── 编辑态提示横幅（固定配色） ──
+            if (song != null && editMode) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Chrome.bar)
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "编辑模式：点击任意一行歌词进行编辑",
+                        color = Chrome.text,
+                        fontSize = 13.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(onClick = { editMode = false }) {
+                        Text("完成", color = Chrome.accent, fontSize = 13.sp)
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+            }
+
             // ── 歌词主体（几乎全屏，唯一随主题变化的区域） ──
             val showTone = SettingsStore.settings.showTone
             val listState = rememberLazyListState()
@@ -172,17 +203,31 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit, onOpenEdit:
             ) {
                 song?.lines?.let { lines ->
                     // 按索引做 key：歌词常有重复行（副歌），不能直接用内容做 key
-                    itemsIndexed(lines, key = { index, _ -> index }) { _, line ->
-                        LyricLineBlock(
-                            line = line,
-                            // 按设置选粤拼版本；旧数据缺某版时回退另一版
-                            jyutping = if (showTone) {
-                                line.jyutping.ifBlank { line.jyutpingToneless }
-                            } else {
-                                line.jyutpingToneless.ifBlank { line.jyutping }
-                            },
-                            theme = theme
-                        )
+                    itemsIndexed(lines, key = { index, _ -> index }) { index, line ->
+                        // 编辑态：整行可点（高亮提示），点中弹 4 字段编辑框
+                        val rowModifier = if (editMode) {
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Chrome.accent.copy(alpha = 0.14f))
+                                .border(1.dp, Chrome.accent.copy(alpha = 0.45f), RoundedCornerShape(8.dp))
+                                .clickable { editingLineIndex = index }
+                                .padding(vertical = 6.dp, horizontal = 8.dp)
+                        } else {
+                            Modifier.fillMaxWidth()
+                        }
+                        Box(modifier = rowModifier) {
+                            LyricLineBlock(
+                                line = line,
+                                // 按设置选粤拼版本；旧数据缺某版时回退另一版
+                                jyutping = if (showTone) {
+                                    line.jyutping.ifBlank { line.jyutpingToneless }
+                                } else {
+                                    line.jyutpingToneless.ifBlank { line.jyutping }
+                                },
+                                theme = theme
+                            )
+                        }
                     }
                 }
             }
@@ -250,6 +295,29 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit, onOpenEdit:
     }
     if (showVersionDialog) {
         VersionDialog(onDismiss = { showVersionDialog = false })
+    }
+
+    // ── 单行编辑弹窗：保存后替换本地歌词并自动退出编辑态 ──
+    if (editingLineIndex != null && song != null) {
+        val idx = editingLineIndex!!
+        if (idx in song.lines.indices) {
+            LineEditDialog(
+                index = idx,
+                line = song.lines[idx],
+                onDismiss = { editingLineIndex = null },
+                onSave = { updated ->
+                    val s = LyricsRepository.currentSong
+                    if (s != null) {
+                        val newLines = s.lines.toMutableList().also { it[idx] = updated }
+                        scope.launch {
+                            LyricsRepository.saveLocalEdit(s.id, newLines)
+                            editingLineIndex = null
+                            editMode = false
+                        }
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -570,5 +638,62 @@ private fun VersionDialog(onDismiss: () -> Unit) {
 private fun VersionAction(label: String, enabled: Boolean, onClick: () -> Unit) {
     OutlinedButton(onClick = onClick, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
         Text(label, color = Chrome.text, fontSize = 14.sp)
+    }
+}
+
+/** 单行歌词编辑弹窗：4 字段（粤拼带调 / 粤拼不带调 / 普通话原文 / 中文谐音），固定配色 */
+@Composable
+private fun LineEditDialog(
+    index: Int,
+    line: LyricLine,
+    onDismiss: () -> Unit,
+    onSave: (LyricLine) -> Unit
+) {
+    // 弹窗每次显示都是全新组合（editingLineIndex 置空即离开组合），故无需 key，直接取当前行初始化
+    var jyutping by remember { mutableStateOf(line.jyutping) }
+    var jyutpingToneless by remember { mutableStateOf(line.jyutpingToneless) }
+    var mandarin by remember { mutableStateOf(line.mandarin) }
+    var homophone by remember { mutableStateOf(line.homophone) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("编辑第 ${index + 1} 行", color = Chrome.text) },
+        text = {
+            Column {
+                LineField("粤拼（带调）", jyutping) { jyutping = it }
+                Spacer(Modifier.height(8.dp))
+                LineField("粤拼（不带调）", jyutpingToneless) { jyutpingToneless = it }
+                Spacer(Modifier.height(8.dp))
+                LineField("普通话原文", mandarin) { mandarin = it }
+                Spacer(Modifier.height(8.dp))
+                LineField("中文谐音", homophone) { homophone = it }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onSave(LyricLine(jyutping, jyutpingToneless, mandarin, homophone))
+            }) {
+                Text("保存", color = Chrome.text)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("取消", color = Chrome.muted)
+            }
+        }
+    )
+}
+
+/** 编辑弹窗里的一个字段：小标签 + 单行输入框（固定配色） */
+@Composable
+private fun LineField(label: String, value: String, onValueChange: (String) -> Unit) {
+    Column {
+        Text(label, color = Chrome.muted, fontSize = 11.sp)
+        Spacer(Modifier.height(2.dp))
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }

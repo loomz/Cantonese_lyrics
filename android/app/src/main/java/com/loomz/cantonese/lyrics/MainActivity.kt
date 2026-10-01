@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import com.loomz.cantonese.lyrics.data.LyricsRepository
 import com.loomz.cantonese.lyrics.data.SettingsStore
 import com.loomz.cantonese.lyrics.ui.Chrome
-import com.loomz.cantonese.lyrics.ui.EditScreen
 import com.loomz.cantonese.lyrics.ui.MainScreen
 import com.loomz.cantonese.lyrics.ui.SearchScreen
 import com.loomz.cantonese.lyrics.ui.SettingsScreen
@@ -45,11 +44,9 @@ class MainActivity : ComponentActivity() {
                 when (screen) {
                     "search" -> SearchScreen(onBack = { screen = "main" })
                     "settings" -> SettingsScreen(context = context, onBack = { screen = "main" })
-                    "edit" -> EditScreen(onBack = { screen = "main" })
                     else -> MainScreen(
                         onOpenSearch = { screen = "search" },
-                        onOpenSettings = { screen = "settings" },
-                        onOpenEdit = { screen = "edit" }
+                        onOpenSettings = { screen = "settings" }
                     )
                 }
             }
