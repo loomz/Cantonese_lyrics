@@ -1,0 +1,34 @@
+# ── Android / Gradle ──────────────────────────────
+.gradle/
+build/
+local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# ── iOS / Xcode ───────────────────────────────────
+xcuserdata/
+DerivedData/
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# ── 微信小程序 / Node ─────────────────────────────
+node_modules/
+miniprogram_npm/
+
+# ── Python ────────────────────────────────────────
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# ── 通用 ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
