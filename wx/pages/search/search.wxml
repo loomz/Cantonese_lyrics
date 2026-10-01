@@ -1,0 +1,99 @@
+<view class="page">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <input
+      class="search-input"
+      placeholder="输入歌名 或 歌手"
+      placeholder-class="search-placeholder"
+      value="{{query}}"
+      bindinput="onInput"
+      confirm-type="search"
+      bindconfirm="doSearch"
+    />
+    <button class="search-btn" size="mini" bindtap="doSearch">搜索</button>
+  </view>
+
+  <!-- 在线歌曲导入管道（获取原词 → 生成粤拼 → 生成谐音） -->
+  <view class="pipeline" wx:if="{{pipeline}}">
+    <view class="pipeline-title">{{pipeline.title}} · {{pipeline.artist}}</view>
+    <view class="status" wx:if="{{pipeline.stage !== 'error'}}">
+      <view class="spinner"></view>
+      <text class="status-text">{{stageText}}</text>
+    </view>
+    <block wx:else>
+      <view class="error">{{pipeline.error}}</view>
+      <view class="retry-row">
+        <button size="mini" bindtap="retryPipeline">重试</button>
+      </view>
+    </block>
+  </view>
+
+  <!-- 错误（本地/在线搜索） -->
+  <view class="error" wx:if="{{error}}">{{error}}</view>
+
+  <!-- 搜索结果（本地） -->
+  <block wx:if="{{searched && !pipeline}}">
+    <view class="section-title">本地结果</view>
+    <view class="empty" wx:if="{{results.length === 0}}">本地没有找到《{{query}}》</view>
+    <view class="result-list" wx:if="{{results.length > 0}}">
+      <view
+        wx:for="{{results}}"
+        wx:key="id"
+        class="result-item"
+        data-id="{{item.id}}"
+        bindtap="openSong"
+      >
+        <view class="result-main">
+          <view class="result-title">{{item.title}}</view>
+          <view class="result-artist">
+            {{item.artist}} · {{item.sourceText}}
+          </view>
+        </view>
+        <view class="del-btn" data-id="{{item.id}}" catchtap="deleteSong">删除</view>
+      </view>
+    </view>
+
+    <!-- 在线歌曲 -->
+    <view class="section-title">在线歌曲（{{onlineProviderText}}）</view>
+    <view class="status" wx:if="{{onlineLoading}}">
+      <view class="spinner"></view>
+      <text class="status-text">正在搜索在线歌词…</text>
+    </view>
+    <view class="error" wx:if="{{onlineError}}">{{onlineError}}</view>
+    <view class="empty" wx:if="{{!onlineLoading && !onlineError && online.length === 0}}">在线没有找到相关歌曲</view>
+    <view class="result-list" wx:if="{{online.length > 0}}">
+      <view
+        wx:for="{{online}}"
+        wx:key="trackId"
+        class="result-item"
+        data-index="{{index}}"
+        bindtap="startPipeline"
+      >
+        <view class="result-main">
+          <view class="result-title">{{item.title}}</view>
+          <view class="result-artist">{{item.artist}}</view>
+        </view>
+        <view class="import-btn">导入</view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 本地歌曲库 -->
+  <view class="section-title">本地歌曲库（{{library.length}}）</view>
+  <view class="result-list">
+    <view
+      wx:for="{{library}}"
+      wx:key="id"
+      class="result-item"
+      data-id="{{item.id}}"
+      bindtap="openSong"
+    >
+      <view class="result-main">
+        <view class="result-title">{{item.title}}</view>
+        <view class="result-artist">{{item.artist}} · {{item.sourceText}}</view>
+      </view>
+      <view class="del-btn" data-id="{{item.id}}" catchtap="deleteSong">删除</view>
+    </view>
+    <view class="empty" wx:if="{{library.length === 0}}">暂无歌曲，搜索并导入一首吧</view>
+  </view>
+</view>

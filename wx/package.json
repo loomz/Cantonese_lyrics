@@ -1,0 +1,8 @@
+{
+  "name": "cantonese-lyrics-wx",
+  "version": "1.0.0",
+  "description": "粤语歌词小程序依赖（sql.js 本地数据库）",
+  "dependencies": {
+    "sql.js": "1.13.0"
+  }
+}

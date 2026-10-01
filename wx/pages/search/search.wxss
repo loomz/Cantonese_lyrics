@@ -1,0 +1,154 @@
+.page {
+  min-height: 100vh;
+  background: #000000;
+  padding: 24rpx 32rpx;
+  box-sizing: border-box;
+}
+
+/* 搜索栏 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.search-input {
+  flex: 1;
+  background: #1c1c1e;
+  border-radius: 12rpx;
+  padding: 18rpx 24rpx;
+  font-size: 30rpx;
+  color: #ffffff;
+}
+
+.search-placeholder {
+  color: #666666;
+}
+
+.search-btn {
+  background: #4a90d9;
+  color: #ffffff;
+  font-size: 26rpx;
+  border-radius: 12rpx;
+}
+
+/* 状态 */
+.status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  padding: 48rpx 0;
+}
+
+.status-text {
+  font-size: 26rpx;
+  color: #aaaaaa;
+}
+
+.spinner {
+  width: 36rpx;
+  height: 36rpx;
+  border: 4rpx solid #333333;
+  border-top-color: #4a90d9;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  color: #ef5350;
+  font-size: 26rpx;
+  padding: 24rpx 8rpx;
+  line-height: 1.5;
+}
+
+.empty {
+  color: #888888;
+  font-size: 28rpx;
+  text-align: center;
+  padding: 32rpx 0;
+}
+
+/* 导入管道进度 */
+.pipeline {
+  background: #1c1c1e;
+  border: 1rpx solid #2c2c2e;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin: 24rpx 0;
+}
+
+.pipeline-title {
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.retry-row {
+  display: flex;
+  justify-content: center;
+  padding: 16rpx 0 8rpx;
+}
+
+.import-btn {
+  color: #4a90d9;
+  font-size: 24rpx;
+  padding: 12rpx 20rpx;
+  border: 1rpx solid #4a90d9;
+  border-radius: 8rpx;
+}
+
+/* 结果列表 */
+.section-title {
+  color: #888888;
+  font-size: 24rpx;
+  margin: 40rpx 0 16rpx;
+}
+
+.result-list {
+  background: #1c1c1e;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  border-bottom: 1rpx solid #2c2c2e;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-main {
+  flex: 1;
+}
+
+.result-title {
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: bold;
+}
+
+.result-artist {
+  color: #888888;
+  font-size: 24rpx;
+  margin-top: 6rpx;
+}
+
+.del-btn {
+  color: #ef5350;
+  font-size: 24rpx;
+  padding: 12rpx 20rpx;
+  border: 1rpx solid #ef5350;
+  border-radius: 8rpx;
+}

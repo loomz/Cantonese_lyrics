@@ -1,0 +1,45 @@
+<view class="page">
+  <view class="form">
+    <view class="form-item">
+      <view class="label">歌词服务地址（apiserver）</view>
+      <input
+        class="input"
+        value="{{apiserverUrl}}"
+        bindinput="onUrl"
+        placeholder="http://127.0.0.1:8000"
+        placeholder-class="ph"
+      />
+      <view class="sub-hint">在线搜歌 / 取原词 / 生成粤拼都走这个服务</view>
+    </view>
+
+    <view class="form-item">
+      <view class="label">粤拼显示声调数字</view>
+      <switch
+        class="tone-switch"
+        checked="{{showTone}}"
+        bindchange="onTone"
+        color="#4a90d9"
+      />
+      <view class="sub-hint">开：nei5 si6 nei5　关：nei si nei（默认关）</view>
+    </view>
+
+    <view class="form-item">
+      <view class="label">谐音标注</view>
+      <view class="glm-note">GLM-5.3-Flash（智谱，内置，无需配置）</view>
+    </view>
+  </view>
+
+  <button class="save-btn" bindtap="save">保存设置</button>
+  <button class="test-btn" bindtap="test" disabled="{{testing}}">
+    {{testing ? '测试中…' : '测试歌词服务连接'}}
+  </button>
+  <view class="test-result" wx:if="{{testResult}}">{{testResult}}</view>
+
+  <view class="tips">
+    <view class="label">说明</view>
+    <view>· 本机运行：cd apiserver && uvicorn main:app --host 0.0.0.0 --port 8000；</view>
+    <view>· 手机/真机访问时，地址要填电脑的局域网 IP（如 http://192.168.1.10:8000）；</view>
+    <view>· 开发者工具需勾选「不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书」才能请求 http 地址；</view>
+    <view>· 正式小程序只允许 https 域名，建议把 apiserver 部署到云服务器（见 apiserver/README.md）。</view>
+  </view>
+</view>

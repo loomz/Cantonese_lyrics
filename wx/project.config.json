@@ -1,0 +1,16 @@
+{
+  "description": "粤语歌词：粤拼/普通话/中文谐音 三行展示",
+  "compileType": "miniprogram",
+  "appid": "touristappid",
+  "projectname": "cantonese-lyrics",
+  "libVersion": "3.4.10",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "ignoreUploadUnusedFiles": true
+  },
+  "condition": {}
+}

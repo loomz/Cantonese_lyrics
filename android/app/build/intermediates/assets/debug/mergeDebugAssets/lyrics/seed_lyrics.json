@@ -1,0 +1,599 @@
+[
+  {
+    "id": "builtin_gai_dang_maan_caan",
+    "title": "街灯晚餐",
+    "artist": "卫兰",
+    "source": "builtin",
+    "createdAt": 1700000000000,
+    "lines": [
+      {
+        "jyutping": "nei si nei go go syut nei zoeng bat daai",
+        "mandarin": "你 是 你 个 个 说 你 长 不 大",
+        "homophone": "内 系 内 锅 锅 虚 内 章 八 带"
+      },
+      {
+        "jyutping": "jin zoi zau si zoi ci cin",
+        "mandarin": "现 在 就 是 再 痴 缠",
+        "homophone": "引 拽 照 系 拽 七 勤"
+      },
+      {
+        "jyutping": "bat dang jyu jat hei gwo wut bat pa ngaai",
+        "mandarin": "不 等 于 一 起 过 活 不 怕 捱",
+        "homophone": "八 等 于 呀 嘿 过 屋 八 怕 挨"
+      },
+      {
+        "jyutping": "jung mei siu wui fuk ze fan ji waak",
+        "mandarin": "用 微 笑 回 覆 这 份 疑 惑",
+        "homophone": "用 梅 秀 为 佛 结 份 易 瓦"
+      },
+      {
+        "jyutping": "ngo bat hoi sam jaa zi soeng nei hoi gaai",
+        "mandarin": "我 不 开 心 也 只 想 你 开 解",
+        "homophone": "窝 八 嗨 伤 牙 几 赏 垒 嗨 改"
+      },
+      {
+        "jyutping": "nei dung dak zam gwaan waai",
+        "mandarin": "你 懂 得 怎 关 怀",
+        "homophone": "垒 懂 哒 展 关 歪"
+      },
+      {
+        "jyutping": "oi zau oi wing jyun jaa wui pa sat baai",
+        "mandarin": "爱 就 爱 永 远 也 会 怕 失 败",
+        "homophone": "爱 照 爱 wing 云 牙 微 怕 撒 败"
+      },
+      {
+        "jyutping": "daan si wai zoek pa syu wai faan sam zung so soeng",
+        "mandarin": "但 是 为 着 怕 输 违 反 心 中 所 想",
+        "homophone": "但 系 歪 这 怕 虚 外 反 伤 中 所 赏"
+      },
+      {
+        "jyutping": "jau sam mo tung faai",
+        "mandarin": "有 甚 么 痛 快",
+        "homophone": "瑶 甚 么 痛 fai"
+      },
+      {
+        "jyutping": "bit kei gwaai cing gam jaa si sing zau",
+        "mandarin": "别 奇 怪 情 感 也 是 成 就",
+        "homophone": "哔 尅 乖 情 港 牙 系 行 走"
+      },
+      {
+        "jyutping": "jyu bat ho gan nei kwaang soeng kwaang dik gaai",
+        "mandarin": "如 不 可 跟 你 逛 想 逛 的 街",
+        "homophone": "鱼 八 活 跟 垒 筐 赏 筐 得 盖"
+      },
+      {
+        "jyutping": "jan jau taam ho jyu faai",
+        "mandarin": "人 又 谈 何 愉 快",
+        "homophone": "羊 要 谈 活 愉 fai"
+      },
+      {
+        "jyutping": "naan dou si wai liu on zi mei loi coi oi nei",
+        "mandarin": "难 道 是 为 了 安 置 未 来 才 爱 你",
+        "homophone": "难 兜 系 歪 流 昂 基 梅 来 揣 爱 垒"
+      },
+      {
+        "jyutping": "seoi jiu gai syun gwo on hoeng maan fuk bin jat hei",
+        "mandarin": "谁 要 计 算 过 安 享 晚 福 便 一 起",
+        "homophone": "谁 优 给 熏 过 昂 哼 满 夫 冰 呀 嘿"
+      },
+      {
+        "jyutping": "syut dou dai ngo zaam si sau bat hei",
+        "mandarin": "说 到 底 我 暂 时 受 不 起",
+        "homophone": "虚 都 逮 窝 脏 细 梢 八 嘿"
+      },
+      {
+        "jyutping": "oi bit mong min baau naa se dou lei",
+        "mandarin": "爱 别 忘 面 包 那 些 道 理",
+        "homophone": "爱 哔 忙 民 包 那 噻 兜 雷"
+      },
+      {
+        "jyutping": "zi soeng heoi sing cyun zi gei",
+        "mandarin": "只 想 去 成 全 自 己",
+        "homophone": "几 赏 灰 行 绳 机 给"
+      },
+      {
+        "jyutping": "seoi wut zoek mei kaau gam gok zou jan coi ho bei",
+        "mandarin": "谁 活 着 未 靠 感 觉 做 人 才 可 悲",
+        "homophone": "谁 屋 这 梅 靠 港 郭 粥 羊 揣 活 悲"
+      },
+      {
+        "jyutping": "pui nei dou cyu hek gaai dang maan caan gik fun hei",
+        "mandarin": "陪 你 到 处 吃 街 灯 晚 餐 极 欢 喜",
+        "homophone": "pui 垒 都 去 嗨 盖 灯 满 仓 给 凤 嘿"
+      },
+      {
+        "jyutping": "waan nei sau jaa zi jan soeng waan sau",
+        "mandarin": "挽 你 手 也 只 因 想 挽 手",
+        "homophone": "晚 垒 扫 牙 几 淹 赏 晚 扫"
+      },
+      {
+        "jyutping": "kyut bat jan sai zuk hon dak hei nei",
+        "mandarin": "决 不 因 世 俗 看 得 起 你",
+        "homophone": "kue 八 淹 塞 舟 嚯 嗯 哒 嘿 垒"
+      },
+      {
+        "jyutping": "joek siu zoek hek fu jaa ngo bat sei",
+        "mandarin": "若 笑 着 吃 苦 也 饿 不 死",
+        "homophone": "哟 秀 这 嗨 服 牙 喔 八 sei"
+      },
+      {
+        "jyutping": "hing hang ngo jyu nei heoi dou ze ging dei",
+        "mandarin": "庆 幸 我 与 你 去 到 这 境 地",
+        "homophone": "hing 航 窝 与 垒 灰 都 结 ging 得"
+      },
+      {
+        "jyutping": "mei man jin sat wui fau jung heoi ze zung tin zan",
+        "mandarin": "未 问 现 实 会 否 容 许 这 种 天 真",
+        "homophone": "梅 瞒 门 引 洒 微 fao 永 灰 结 总 真"
+      },
+      {
+        "jyutping": "gai zuk bat fong hei",
+        "mandarin": "继 续 不 放 弃",
+        "homophone": "结 中 听 簪 该"
+      },
+      {
+        "jyutping": "jyu zoek nei mou seoi zip sau tou bei",
+        "mandarin": "遇 着 你 无 须 接 受 逃 避",
+        "homophone": "遇 这 垒 某 虽 及 梢 投 北"
+      },
+      {
+        "jyutping": "jyu faa cou zung jiu oi gwong sin hung hei",
+        "mandarin": "如 花 草 总 要 爱 光 线 空 气",
+        "homophone": "鱼 发 丑 总 优 爱 光 新 轰 嘿"
+      },
+      {
+        "jyutping": "jan jau jyu ho zi hei",
+        "mandarin": "人 又 如 何 自 欺",
+        "homophone": "羊 要 鱼 活 机 黑"
+      },
+      {
+        "jyutping": "fu jyu lok zi wai nei",
+        "mandarin": "苦 与 乐 只 为 你",
+        "homophone": "服 与 落 几 歪 垒"
+      },
+      {
+        "jyutping": "bat wui zoi fu bei gung hei",
+        "mandarin": "不 会 在 乎 被 恭 喜",
+        "homophone": "八 微 拽 夫 被 恭 喜"
+      },
+      {
+        "jyutping": "jaa heoi zi gong lei soeng bat jung ji",
+        "mandarin": "也 许 只 讲 理 想 不 容 易",
+        "homophone": "牙 灰 几 港 雷 赏 八 容 易"
+      },
+      {
+        "jyutping": "jyu joek jau nei bui jing zung jau lok gok dei",
+        "mandarin": "如 若 有 你 背 影 总 有 落 脚 地",
+        "homophone": "鱼 哟 瑶 垒 背 影 总 瑶 落 脚 得"
+      }
+    ]
+  },
+  {
+    "id": "builtin_gan_zap_lin_lok_jan",
+    "title": "紧急联络人",
+    "artist": "Gareth.T 汤令山",
+    "source": "builtin",
+    "createdAt": 1700000000000,
+    "lines": [
+      {
+        "jyutping": "cyun loi faat jyu man nei si ngo dik gaa suk baa",
+        "mandarin": "传 来 法 语 问 你 是 我 的 家 属 吧",
+        "homophone": "群 来 法 雨 闷 内 系 我 得 嘎 索 吧"
+      },
+      {
+        "jyutping": "jyun loi ngo ji zi naa baak long zi din do haa",
+        "mandarin": "原 来 我 已 自 那 白 朗 之 颠 堕 下",
+        "homophone": "云 来 我 已 基 那 巴 朗 基 丁 堕 哈"
+      },
+      {
+        "jyutping": "ming ming fan hoi wai ho daa ze hou maa",
+        "mandarin": "明 明 分 开 为 何 打 这 号 码",
+        "homophone": "明 明 分 嗨 歪 活 打 结 侯 马"
+      },
+      {
+        "jyutping": "nei ho wui han bat gaai ngo zam bat saan liu taa",
+        "mandarin": "你 可 会 很 不 解 我 怎 不 删 了 它",
+        "homophone": "内 活 微 很 八 解 我 展 八 删 溜 它"
+      },
+      {
+        "jyutping": "ngo zi bat goi daan si bat goi",
+        "mandarin": "我 知 不 该 但 是 不 改",
+        "homophone": "我 基 八 乖 但 系 八 改"
+      },
+      {
+        "jyutping": "zoeng mau zung lau mong dik oi",
+        "mandarin": "像 某 种 流 亡 的 爱",
+        "homophone": "脏 毛 种 劳 王 得 爱"
+      },
+      {
+        "jyutping": "cin lei zi ngoi lyun hai waan si ji zoi",
+        "mandarin": "千 里 之 外 联 系 还 是 依 在",
+        "homophone": "亲 雷 基 外 伦 海 晚 系 依 拽"
+      },
+      {
+        "jyutping": "jau mut jau jat si bun miu soeng bei",
+        "mandarin": "有 没 有 一 丝 半 秒 伤 悲",
+        "homophone": "瑶 某 瑶 呀 西 奔 谬 伤 悲"
+      },
+      {
+        "jyutping": "jiu si ngo gam maan ji dei tyun hei",
+        "mandarin": "要 是 我 今 晚 异 地 断 气",
+        "homophone": "优 系 我 根 满 易 得 屯 嘿"
+      },
+      {
+        "jyutping": "man nei ho hang zik je gon daap tung siu haak gei",
+        "mandarin": "问 你 可 肯 即 夜 赶 搭 通 宵 客 机",
+        "homophone": "闷 内 活 恨 即 夜 国 搭 通 修 哈 给"
+      },
+      {
+        "jyutping": "jau mut jau jat si bun miu fun hei",
+        "mandarin": "有 没 有 一 丝 半 秒 欢 喜",
+        "homophone": "瑶 某 瑶 呀 西 奔 谬 夫 嘿"
+      },
+      {
+        "jyutping": "zoi mou jan ji hau loi faan zyu nei",
+        "mandarin": "再 无 人 以 后 来 烦 住 你",
+        "homophone": "拽 某 羊 以 侯 来 烦 居 内"
+      },
+      {
+        "jyutping": "joek gok dak zoeng ze zaak jam gaa zyu han lei kei",
+        "mandarin": "若 觉 得 将 这 责 任 加 诸 很 离 奇",
+        "homophone": "哟 郭 哒 章 结 咋 硬 嘎 居 很 类 尅"
+      },
+      {
+        "jyutping": "si ngo zi si gam sai zeoi hau sou jiu dik jan ji",
+        "mandarin": "是 我 自 私 今 世 最 后 骚 扰 的 人 儿",
+        "homophone": "系 我 机 私 根 塞 最 后 骚 优 得 羊 衣"
+      },
+      {
+        "jyutping": "zi soeng si nei",
+        "mandarin": "只 想 是 你",
+        "homophone": "几 赏 系 内"
+      },
+      {
+        "jyutping": "seoi lyun lok nei joek ngo zoi mau bing cyun jyu naan",
+        "mandarin": "谁 联 络 你 若 我 在 某 冰 川 遇 难",
+        "homophone": "谁 伦 洛 内 哟 我 拽 毛 冰 群 遇 难"
+      },
+      {
+        "jyutping": "jin ji gaau nei fu tung jik syun hak sik long maan",
+        "mandarin": "然 而 教 你 负 痛 亦 算 黑 色 浪 漫",
+        "homophone": "银 以 教 内 夫 痛 亦 熏 哈 色 龙 漫"
+      },
+      {
+        "jyutping": "tim mat naa zan si gwaan gwaa jat zi",
+        "mandarin": "甜 蜜 那 阵 时 鳏 寡 日 子",
+        "homophone": "听 密 那 阵 西 关 瓜 呀 几"
+      },
+      {
+        "jyutping": "zung gong dou daai leoi ngaan",
+        "mandarin": "总 讲 到 带 泪 眼",
+        "homophone": "总 港 都 带 泪 俺"
+      },
+      {
+        "jyutping": "seoi liu cing gam mou coeng ze gaa cit taai gaan daan",
+        "mandarin": "谁 料 情 感 无 常 这 假 设 太 简 单",
+        "homophone": "谁 溜 情 港 某 伤 结 嘎 七 太 敢 单"
+      },
+      {
+        "jyutping": "nei jau mut jau jat si bun miu soeng bei",
+        "mandarin": "你 有 没 有 一 丝 半 秒 伤 悲",
+        "homophone": "内 瑶 某 瑶 呀 西 奔 谬 伤 悲"
+      },
+      {
+        "jyutping": "jiu si ngo gam maan ji dei tyun hei",
+        "mandarin": "要 是 我 今 晚 异 地 断 气",
+        "homophone": "优 系 我 根 满 易 得 屯 嘿"
+      },
+      {
+        "jyutping": "man nei ho hang zik je gon daap tung siu haak gei",
+        "mandarin": "问 你 可 肯 即 夜 赶 搭 通 宵 客 机",
+        "homophone": "闷 内 活 恨 即 夜 国 搭 通 修 哈 给"
+      },
+      {
+        "jyutping": "jau mut jau jat si bun miu fun hei",
+        "mandarin": "有 没 有 一 丝 半 秒 欢 喜",
+        "homophone": "瑶 某 瑶 呀 西 奔 谬 夫 嘿"
+      },
+      {
+        "jyutping": "zoi mou jan ji hau heoi hin bun nei",
+        "mandarin": "再 无 人 以 后 去 牵 绊 你",
+        "homophone": "拽 某 羊 以 侯 灰 hin 奔 内"
+      },
+      {
+        "jyutping": "joek gok dak zoeng ze zaak jam gaa zyu han lei kei",
+        "mandarin": "若 觉 得 将 这 责 任 加 诸 很 离 奇",
+        "homophone": "哟 郭 哒 章 结 咋 硬 嘎 居 很 类 尅"
+      },
+      {
+        "jyutping": "si ngo zi si gam sai zeoi hau sou jiu dik jan ji",
+        "mandarin": "是 我 自 私 今 世 最 后 骚 扰 的 人 儿",
+        "homophone": "系 我 机 私 根 塞 最 后 骚 优 得 羊 衣"
+      },
+      {
+        "jyutping": "zi soeng si nei bit seoi si nei",
+        "mandarin": "只 想 是 你 必 须 是 你",
+        "homophone": "几 赏 系 内 必 虽 系 内"
+      },
+      {
+        "jyutping": "han soeng bei nim gei zik si daam daam mei mei",
+        "mandarin": "很 想 被 念 记 即 使 淡 淡 微 微",
+        "homophone": "很 赏 被 宁 给 即 系 谈 谈 微 微"
+      },
+      {
+        "jyutping": "zau syun zoi sang jik bei him hei",
+        "mandarin": "就 算 在 生 亦 被 嫌 弃",
+        "homophone": "照 熏 拽 伤 亦 被 应 嘿"
+      },
+      {
+        "jyutping": "dou soeng ze wai jin syut hou soeng nei",
+        "mandarin": "都 想 借 遗 言 说 好 想 你",
+        "homophone": "都 赏 结 维 言 虚 后 赏 内"
+      },
+      {
+        "jyutping": "ho sik zeoi mei mei gau wan hei jat hei",
+        "mandarin": "可 惜 最 尾 未 够 运 气 一 起",
+        "homophone": "活 硒 最 妹 妹 高 晚 嘿 呀 嘿"
+      },
+      {
+        "jyutping": "jau mut jau jat si Ha~",
+        "mandarin": "有 没 有 一 丝 Ha~",
+        "homophone": "瑶 某 瑶 呀 西 Ha~"
+      },
+      {
+        "jyutping": "jiu si ngo gam maan Ha~",
+        "mandarin": "要 是 我 今 晚 Ha~",
+        "homophone": "优 系 我 根 满 Ha~"
+      },
+      {
+        "jyutping": "waa dou zeoi bin daa zyu zou bin mak lou jan",
+        "mandarin": "话 到 嘴 边 打 住 早 变 陌 路 人",
+        "homophone": "哇 都 嘴 边 打 居 走 宾 陌 漏 羊"
+      },
+      {
+        "jyutping": "soeng jau waan soeng si daai gei",
+        "mandarin": "尚 有 幻 想 是 大 忌",
+        "homophone": "伤 瑶 幻 想 系 带 给"
+      },
+      {
+        "jyutping": "ze hou maa jing goi coeng min jyu sau gei",
+        "mandarin": "这 号 码 应 该 长 眠 于 手 机",
+        "homophone": "结 侯 马 应 乖 场 民 于 扫 给"
+      },
+      {
+        "jyutping": "zau syun sei jik bit zoi sou jiu nei",
+        "mandarin": "就 算 死 亦 别 再 骚 扰 你",
+        "homophone": "照 熏 sei 亦 必 拽 骚 优 内"
+      },
+      {
+        "jyutping": "joek gok dak ze ok zok kek zan dik han waan pei",
+        "mandarin": "若 觉 得 这 恶 作 剧 真 的 很 顽 皮",
+        "homophone": "哟 郭 哒 结 喔 作 尅 真 得 很 玩 陪"
+      },
+      {
+        "jyutping": "zoi gou bit sik kap ngo daai leoi ban song dik cing jan",
+        "mandarin": "在 告 别 式 给 我 带 泪 奔 丧 的 情 人",
+        "homophone": "拽 够 必 色 卡 我 带 泪 奔 桑 得 情 羊"
+      },
+      {
+        "jyutping": "zi soeng si nei",
+        "mandarin": "只 想 是 你",
+        "homophone": "几 赏 系 内"
+      }
+    ]
+  },
+  {
+    "id": "builtin_man_nei_man_soeng_taai_hung",
+    "title": "吻你吻上太空",
+    "artist": "曾舜晞",
+    "source": "builtin",
+    "createdAt": 1700000000000,
+    "lines": [
+      {
+        "jyutping": "wui jik mei hou waai nim zok tin heoi hou",
+        "mandarin": "回 忆 美 好 怀 念 昨 天 虚 耗",
+        "homophone": "回 一 美 候 歪 宁 昨 tin 灰 侯"
+      },
+      {
+        "jyutping": "long maan nang mok si ming wan seoi lou",
+        "mandarin": "浪 漫 能 漠 视 命 运 衰 老",
+        "homophone": "龙 漫 囊 漠 细 命 温 衰 老"
+      },
+      {
+        "jyutping": "bong sam jung pou",
+        "mandarin": "放 心 拥 抱",
+        "homophone": "放 森 拥 剖"
+      },
+      {
+        "jyutping": "taai hung bong fat sam taai hung mei dung fu lou",
+        "mandarin": "太 空 仿 佛 心 太 空 未 懂 苦 恼",
+        "homophone": "太 洪 方 发 森 太 洪 妹 懂 服 楼"
+      },
+      {
+        "jyutping": "zeoi jap loeng je gik maan coeng gwai dou",
+        "mandarin": "坠 入 良 夜 极 漫 长 轨 道",
+        "homophone": "醉 呀 良 夜 给 漫 场 轨 兜"
+      },
+      {
+        "jyutping": "hang sing zoi mei pung dou",
+        "mandarin": "恒 星 再 未 碰 到",
+        "homophone": "航 星 再 妹 彭 兜"
+      },
+      {
+        "jyutping": "jyu deoi ngon gung mou daan jan mou",
+        "mandarin": "于 对 岸 共 舞 单 人 舞",
+        "homophone": "于 堆 岸 共 某 单 羊 某"
+      },
+      {
+        "jyutping": "hong hoi gaa syut fung long oi dak fau cou",
+        "mandarin": "航 海 家 说 风 浪 爱 得 浮 躁",
+        "homophone": "航 海 嘎 虚 风 浪 爱 达 浮 躁"
+      },
+      {
+        "jyutping": "zyun zyun gok dou",
+        "mandarin": "转 转 角 度",
+        "homophone": "转 变 角 度"
+      },
+      {
+        "jyutping": "ngo man nei man soeng taai hung",
+        "mandarin": "我 吻 你 吻 上 太 空",
+        "homophone": "我 蛮 内 蛮 上 太 洪"
+      },
+      {
+        "jyutping": "tou lei jan gaan dik hak dung",
+        "mandarin": "逃 离 人 间 的 黑 洞",
+        "homophone": "投 类 羊 甘 得 哈 洞"
+      },
+      {
+        "jyutping": "jiu jiu tau bit syut waa",
+        "mandarin": "摇 摇 头 别 说 话",
+        "homophone": "摇 摇 投 逼 虚 哇"
+      },
+      {
+        "jyutping": "toi tau mong sap zi sing faat go mung",
+        "mandarin": "抬 头 望 十 字 星 发 个 梦",
+        "homophone": "投 投 望 色 字 星 发 果 梦"
+      },
+      {
+        "jyutping": "pui nei zoi fong hei taai hung",
+        "mandarin": "陪 你 再 放 弃 太 空",
+        "homophone": "陪 内 再 放 嘿 太 洪"
+      },
+      {
+        "jyutping": "jing jyun tou fung ceoi cou dung",
+        "mandarin": "迎 沿 途 风 吹 草 动",
+        "homophone": "迎 云 投 风 吹 丑 动"
+      },
+      {
+        "jyutping": "loi cam wui lok daan dik sam",
+        "mandarin": "来 寻 回 落 单 的 心",
+        "homophone": "来 藏 为 落 单 得 森"
+      },
+      {
+        "jyutping": "wo waan soeng sing jam",
+        "mandarin": "和 幻 想 声 音",
+        "homophone": "窝 幻 想 星 音"
+      },
+      {
+        "jyutping": "ceoi wui jik zoi dung jung",
+        "mandarin": "随 回 忆 再 动 容",
+        "homophone": "翠 为 忆 再 动 用"
+      },
+      {
+        "jyutping": "pang wui jik zi kek tung",
+        "mandarin": "凭 回 忆 治 剧 痛",
+        "homophone": "朋 为 忆 治 给 痛"
+      },
+      {
+        "jyutping": "seoi dou zi nin jyut jat zoi ceot co",
+        "mandarin": "谁 都 知 年 月 日 在 出 错",
+        "homophone": "谁 兜 机 宁 玉 呀 在 出 错"
+      },
+      {
+        "jyutping": "daan zi siu nei jaa gong",
+        "mandarin": "但 至 少 你 也 讲",
+        "homophone": "但 机 修 内 呀 港"
+      },
+      {
+        "jyutping": "cung mei wai ham ze tong",
+        "mandarin": "从 未 遗 憾 这 趟",
+        "homophone": "从 来 为 憾 这 趟"
+      },
+      {
+        "jyutping": "loi gong zi jiu gong zoi soeng ngo",
+        "mandarin": "来 讲 只 要 讲 在 想 我",
+        "homophone": "来 港 机 友 港 在 想 我"
+      },
+      {
+        "jyutping": "bin nang zoeng zeoi co gei jik",
+        "mandarin": "便 能 将 最 初 记 忆",
+        "homophone": "宾 囊 将 最 错 给 忆"
+      },
+      {
+        "jyutping": "zeon cing dei sik fong",
+        "mandarin": "尽 情 地 释 放",
+        "homophone": "尽 情 得 释 放"
+      },
+      {
+        "jyutping": "tung waa sai gaai zong po",
+        "mandarin": "童 话 世 界 撞 破",
+        "homophone": "童 话 塞 该 撞 破"
+      },
+      {
+        "jyutping": "jyu deoi ngon gung mou daan jan mou",
+        "mandarin": "于 对 岸 共 舞 单 人 舞",
+        "homophone": "于 堆 岸 共 某 单 羊 某"
+      },
+      {
+        "jyutping": "hong hoi gaa syut fung long oi dak fau cou",
+        "mandarin": "航 海 家 说 风 浪 爱 得 浮 躁",
+        "homophone": "航 海 嘎 虚 风 浪 爱 达 浮 躁"
+      },
+      {
+        "jyutping": "zyun zyun gok dou",
+        "mandarin": "转 转 角 度",
+        "homophone": "转 变 角 度"
+      },
+      {
+        "jyutping": "ngo man nei man soeng taai hung",
+        "mandarin": "我 吻 你 吻 上 太 空",
+        "homophone": "我 蛮 内 蛮 上 太 洪"
+      },
+      {
+        "jyutping": "tou lei jan gaan dik hak dung",
+        "mandarin": "逃 离 人 间 的 黑 洞",
+        "homophone": "投 类 羊 甘 得 哈 洞"
+      },
+      {
+        "jyutping": "jiu jiu tau bit syut waa",
+        "mandarin": "摇 摇 头 别 说 话",
+        "homophone": "摇 摇 投 逼 虚 哇"
+      },
+      {
+        "jyutping": "toi tau mong sap zi sing faat go mung",
+        "mandarin": "抬 头 望 十 字 星 发 个 梦",
+        "homophone": "投 投 望 色 字 星 发 果 梦"
+      },
+      {
+        "jyutping": "pui nei zoi fong hei taai hung",
+        "mandarin": "陪 你 再 放 弃 太 空",
+        "homophone": "陪 内 再 放 嘿 太 洪"
+      },
+      {
+        "jyutping": "jing jyun tou fung ceoi cou dung",
+        "mandarin": "迎 沿 途 风 吹 草 动",
+        "homophone": "迎 云 投 风 吹 丑 动"
+      },
+      {
+        "jyutping": "loi cam wui lok daan dik sam",
+        "mandarin": "来 寻 回 落 单 的 心",
+        "homophone": "来 藏 为 落 单 得 森"
+      },
+      {
+        "jyutping": "wo waan soeng sing jam",
+        "mandarin": "和 幻 想 声 音",
+        "homophone": "窝 幻 想 星 音"
+      },
+      {
+        "jyutping": "ceoi wui jik zoi dung jung",
+        "mandarin": "随 回 忆 再 动 容",
+        "homophone": "翠 为 忆 再 动 用"
+      },
+      {
+        "jyutping": "pang wui jik zi kek tung",
+        "mandarin": "凭 回 忆 治 剧 痛",
+        "homophone": "朋 为 忆 治 给 痛"
+      },
+      {
+        "jyutping": "dang taap soeng gung nei soeng jan mou",
+        "mandarin": "灯 塔 上 共 你 双 人 舞",
+        "homophone": "灯 塔 上 共 内 双 羊 某"
+      },
+      {
+        "jyutping": "hong hoi gaa syut fung long gyun lyun waai pou",
+        "mandarin": "航 海 家 说 风 浪 眷 恋 怀 抱",
+        "homophone": "航 海 嘎 虚 风 浪 眷 恋 怀 抱"
+      }
+    ]
+  }
+]

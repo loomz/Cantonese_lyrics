@@ -1,0 +1,86 @@
+<view class="page" style="background:{{theme.background}}">
+  <!-- 顶栏：左上 列表 / 右上 搜索 -->
+  <view class="topbar" style="padding-top:{{statusBarHeight}}px;color:{{theme.mandarin}}">
+    <view class="topbar-btn" hover-class="hover" bindtap="openRecent">
+      <text class="topbar-icon">📋</text>
+      <text class="topbar-label">列表</text>
+    </view>
+    <view class="topbar-btn" hover-class="hover" bindtap="onSearch">
+      <text class="topbar-icon">🔍</text>
+      <text class="topbar-label">搜索</text>
+    </view>
+  </view>
+
+  <!-- 歌曲标题 -->
+  <view class="song-title" style="color:{{theme.jyutping}}">
+    {{song.title}}  ·  {{song.artist}}
+  </view>
+
+  <!-- 歌词主体（几乎全屏）：每句三行 粤拼/普通话/中文谐音 -->
+  <scroll-view class="lyrics" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}">
+    <view class="lyrics-inner">
+      <block wx:for="{{lines}}" wx:key="index" wx:for-item="L">
+        <view class="line-block">
+          <view class="line-jp" wx:if="{{L.jyutping}}" style="color:{{theme.jyutping}}">{{L.jyutping}}</view>
+          <view class="line-md" wx:if="{{L.mandarin}}" style="color:{{theme.mandarin}}">{{L.mandarin}}</view>
+          <view class="line-hp" wx:if="{{L.homophone}}" style="color:{{theme.homophone}}">{{L.homophone}}</view>
+        </view>
+      </block>
+      <view class="lyrics-end" wx:if="{{song.lines.length}}">—— 完 ——</view>
+    </view>
+  </scroll-view>
+
+  <!-- 底栏：主题 / 上一首 / 下一首 / 设置 -->
+  <view class="bottombar" style="color:{{theme.mandarin}}">
+    <view class="bottom-btn" hover-class="hover" bindtap="onTheme">🎨 主题</view>
+    <view class="bottom-btn" hover-class="hover" bindtap="onPrev">‹ 上一首</view>
+    <view class="bottom-btn" hover-class="hover" bindtap="onNext">下一首 ›</view>
+    <view class="bottom-btn" hover-class="hover" bindtap="onSettings">⚙️ 设置</view>
+  </view>
+
+  <!-- 主题选择弹层 -->
+  <view class="mask" wx:if="{{showThemePicker}}" bindtap="closeTheme">
+    <view class="theme-panel" catchtap="noop">
+      <view class="theme-panel-title" style="color:{{theme.mandarin}}">选择主题模板</view>
+      <view class="theme-grid">
+        <view
+          wx:for="{{themes}}"
+          wx:key="name"
+          class="theme-card {{themeIndex === index ? 'active' : ''}}"
+          data-index="{{index}}"
+          bindtap="pickTheme"
+        >
+          <view class="theme-swatch" style="background:{{item.background}}">
+            <text style="color:{{item.mandarin}}">粤</text>
+          </view>
+          <text class="theme-name">{{item.name}}</text>
+        </view>
+      </view>
+      <view class="theme-close" style="color:{{theme.jyutping}}" bindtap="closeTheme">关闭</view>
+    </view>
+  </view>
+
+  <!-- 最近歌词列表弹层 -->
+  <view class="mask" wx:if="{{showRecent}}" bindtap="closeRecent">
+    <view class="recent-panel" catchtap="noop">
+      <view class="theme-panel-title" style="color:{{theme.mandarin}}">最近歌词</view>
+      <view class="recent-list">
+        <view
+          wx:for="{{recent}}"
+          wx:key="id"
+          class="recent-item"
+          data-id="{{item.id}}"
+          bindtap="pickRecent"
+        >
+          <view class="recent-main">
+            <view class="recent-title" style="color:{{theme.mandarin}}">{{item.title}}</view>
+            <view class="recent-artist" style="color:{{theme.jyutping}}">{{item.artist}}</view>
+          </view>
+          <view class="recent-cur" wx:if="{{item.id === song.id}}" style="color:{{theme.jyutping}}">当前</view>
+        </view>
+        <view class="empty" wx:if="{{recent.length === 0}}" style="color:{{theme.jyutping}}">暂无歌曲，去搜索添加吧</view>
+      </view>
+      <view class="theme-close" style="color:{{theme.jyutping}}" bindtap="closeRecent">关闭</view>
+    </view>
+  </view>
+</view>
