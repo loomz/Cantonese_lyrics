@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -56,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import com.loomz.cantonese.lyrics.data.LyricsRepository
 import com.loomz.cantonese.lyrics.data.SettingsStore
 import com.loomz.cantonese.lyrics.model.LyricLine
+import com.loomz.cantonese.lyrics.model.languageLabel
 import kotlinx.coroutines.launch
 
 /** 应用入口界面：几乎全屏歌词 + 顶栏 列表/搜索 + 底栏 主题/上一首/下一首/设置 */
@@ -108,20 +111,36 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
                 }
             }
 
-            // ── 歌曲标题（固定配色 + 半透明底，保证任意主题背景上可读） ──
+            // ── 歌曲标题 + 语言标签（固定配色 + 半透明底，保证任意主题背景上可读） ──
             if (song != null) {
-                Text(
-                    text = "${song.title}  ·  ${song.artist}",
-                    color = Chrome.muted,
-                    fontSize = 13.sp,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Chrome.bar)
-                        .padding(horizontal = 48.dp, vertical = 2.dp)
-                )
+                        .padding(horizontal = 48.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "${song.title}  ·  ${song.artist}",
+                        color = Chrome.muted,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    languageLabel(song.language)?.let { label ->
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = label,
+                            color = Chrome.accent,
+                            fontSize = 10.sp,
+                            modifier = Modifier
+                                .border(0.5.dp, Chrome.accent, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        )
+                    }
+                }
             }
 
             // ── 服务端更新横幅（固定配色） ──
@@ -219,12 +238,14 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
                         Box(modifier = rowModifier) {
                             LyricLineBlock(
                                 line = line,
-                                // 按设置选粤拼版本；旧数据缺某版时回退另一版
+                                // 按设置选注音版本；旧数据缺某版时回退另一版
                                 jyutping = if (showTone) {
                                     line.jyutping.ifBlank { line.jyutpingToneless }
                                 } else {
                                     line.jyutpingToneless.ifBlank { line.jyutping }
                                 },
+                                // 粤语逐字对齐（去空格）；韩日语按词/读音单位，保留空格
+                                charAligned = song.language == "yue",
                                 theme = theme
                             )
                         }
@@ -304,6 +325,7 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
             LineEditDialog(
                 index = idx,
                 line = song.lines[idx],
+                language = song.language,
                 onDismiss = { editingLineIndex = null },
                 onSave = { updated ->
                     val s = LyricsRepository.currentSong
@@ -400,24 +422,31 @@ private fun calcLyricLetterSpacing(n: Int, availableW: Int): Float {
 }
 
 /**
- * 一句歌词：粤拼单独一行居中；普通话 + 中文谐音两行逐字对齐。
+ * 一句歌词：注音单独一行居中；原文 + 中文谐音两行逐字对齐（粤语）或保留空格（韩日语）。
  *
- * 对齐关键：中文是等宽字，把普通话与谐音都去掉字间空格变成连续汉字后，两行字数
+ * 对齐关键：中文是等宽字，把原文与谐音都去掉字间空格变成连续汉字后，两行字数
  * 相同时用「相同字号 + 相同字距 + 居中」即可逐字对齐。网易云原词无空格、谐音有空格，
  * 直接渲染会因两行宽度不同而错开，故统一去空格。字距按字数自适应（字少松、字多紧），
  * 让整行尽量不换行；字号固定 20sp 不变。英文/混合行（如整句英文）保留原样（含空格），
- * 用正常字距、允许换行。传入的 jyutping 已按「声调显示」设置选好版本。
+ * 用正常字距、允许换行。[charAligned]=false（韩日语）时不去空格——谐音按词/读音单位
+ * 分隔，且日韩原文字符与谐音汉字并非等宽逐字对应，去空格反而破坏对齐。
+ * 传入的 jyutping 已按「声调显示」设置选好版本。
  * 颜色随当前歌词主题（[theme]）变化——这是全 App 里唯一随主题变色的文字。
  */
 @Composable
-fun LyricLineBlock(line: LyricLine, jyutping: String, theme: LyricsTheme) {
+fun LyricLineBlock(
+    line: LyricLine,
+    jyutping: String,
+    charAligned: Boolean = true,
+    theme: LyricsTheme
+) {
     val hasJ = jyutping.isNotBlank()
     val hasM = line.mandarin.isNotBlank()
     val hasH = line.homophone.isNotBlank()
     if (!hasJ && !hasM && !hasH) return
 
-    // 中文行去空格（对齐）；英文/混合行保留原样
-    val cjk = isCjkLine(line.mandarin) || isCjkLine(line.homophone)
+    // 中文行去空格（逐字对齐）；charAligned=false（韩日语）或英文/混合行保留原样
+    val cjk = charAligned && (isCjkLine(line.mandarin) || isCjkLine(line.homophone))
     val mandarin = if (cjk) line.mandarin.replace(" ", "") else line.mandarin
     val homophone = if (cjk) line.homophone.replace(" ", "") else line.homophone
 
@@ -474,7 +503,9 @@ fun ThemePickerDialog(onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         title = { Text("选择主题模板", color = Chrome.text) },
         text = {
-            Column {
+            // 7 套模板整列高约 830dp，超过一屏；AlertDialog 的 text 槽不自带滚动，
+            // 不包 verticalScroll 时底部（少女粉/复古米）会被裁掉
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 LyricsThemes.forEachIndexed { index, t ->
                     Column(
                         Modifier
@@ -486,7 +517,7 @@ fun ThemePickerDialog(onDismiss: () -> Unit) {
                                 SettingsStore.saveTheme(context, index)
                                 onDismiss()
                             }
-                            .padding(12.dp)
+                            .padding(10.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(t.name, color = t.mandarin, fontSize = 15.sp, fontWeight = FontWeight.Bold)
@@ -495,7 +526,7 @@ fun ThemePickerDialog(onDismiss: () -> Unit) {
                                 Text("当前", color = t.jyutping, fontSize = 12.sp)
                             }
                         }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
                         // 三行样例：粤拼 / 普通话 / 中文谐音（取「我吻你吻上太空」）
                         Text(
                             "ngo5 man2 nei5 man2 soeng6 taai3 hung1",
@@ -517,7 +548,7 @@ fun ThemePickerDialog(onDismiss: () -> Unit) {
                             textAlign = TextAlign.Center
                         )
                     }
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(8.dp))
                 }
             }
         },
@@ -641,14 +672,21 @@ private fun VersionAction(label: String, enabled: Boolean, onClick: () -> Unit) 
     }
 }
 
-/** 单行歌词编辑弹窗：4 字段（粤拼带调 / 粤拼不带调 / 普通话原文 / 中文谐音），固定配色 */
+/** 单行歌词编辑弹窗：4 字段，标签按语言区分（粤拼/罗马音/原文/中文谐音），固定配色 */
 @Composable
 private fun LineEditDialog(
     index: Int,
     line: LyricLine,
+    language: String,
     onDismiss: () -> Unit,
     onSave: (LyricLine) -> Unit
 ) {
+    // 字段标签按语言：粤语=粤拼两版，韩日语两注音字段同存罗马音
+    val labels = when (language) {
+        "ko" -> listOf("罗马音", "罗马音（同上）", "韩语原文", "中文谐音")
+        "ja" -> listOf("罗马音", "罗马音（同上）", "日语原文", "中文谐音")
+        else -> listOf("粤拼（带调）", "粤拼（不带调）", "普通话原文", "中文谐音")
+    }
     // 弹窗每次显示都是全新组合（editingLineIndex 置空即离开组合），故无需 key，直接取当前行初始化
     var jyutping by remember { mutableStateOf(line.jyutping) }
     var jyutpingToneless by remember { mutableStateOf(line.jyutpingToneless) }
@@ -659,13 +697,13 @@ private fun LineEditDialog(
         title = { Text("编辑第 ${index + 1} 行", color = Chrome.text) },
         text = {
             Column {
-                LineField("粤拼（带调）", jyutping) { jyutping = it }
+                LineField(labels[0], jyutping) { jyutping = it }
                 Spacer(Modifier.height(8.dp))
-                LineField("粤拼（不带调）", jyutpingToneless) { jyutpingToneless = it }
+                LineField(labels[1], jyutpingToneless) { jyutpingToneless = it }
                 Spacer(Modifier.height(8.dp))
-                LineField("普通话原文", mandarin) { mandarin = it }
+                LineField(labels[2], mandarin) { mandarin = it }
                 Spacer(Modifier.height(8.dp))
-                LineField("中文谐音", homophone) { homophone = it }
+                LineField(labels[3], homophone) { homophone = it }
             }
         },
         confirmButton = {

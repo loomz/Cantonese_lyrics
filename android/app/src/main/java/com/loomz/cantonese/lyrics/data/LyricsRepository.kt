@@ -90,12 +90,12 @@ object LyricsRepository {
         lines = emptyList()
     )
 
-    /** 读活动文档（localDoc 或 serverDoc），填 lines，返回完整 Song。 */
+    /** 读活动文档（localDoc 或 serverDoc），填 lines/language，返回完整 Song。 */
     private fun loadSong(id: String): Song? {
         val e = dao.byId(id) ?: return null
         val docText = if (e.preferLocal && e.hasLocalEdit) (e.localDoc ?: e.serverDoc) else e.serverDoc
         val doc = docText?.let { parseDoc(it) } ?: return null
-        return e.toSong().copy(lines = doc.lines)
+        return e.toSong().copy(lines = doc.lines, language = doc.language)
     }
 
     /** 容错解析歌词文档 JSON；损坏返回 null。 */
@@ -247,6 +247,12 @@ object LyricsRepository {
     /** 保存本地编辑：写 localDoc，置 hasLocalEdit=true、preferLocal=true（保存即查看自己的版本）。 */
     suspend fun saveLocalEdit(songId: String, lines: List<LyricLine>) {
         val song = songs.find { it.id == songId } ?: return
+        // language 取自当前活动文档原文（元数据投影没有该字段）。
+        val language = withContext(Dispatchers.IO) {
+            val e = dao.byId(songId)
+            val docText = if (e != null && e.preferLocal && e.hasLocalEdit) (e.localDoc ?: e.serverDoc) else e?.serverDoc
+            docText?.let { parseDoc(it) }?.language ?: "yue"
+        }
         val doc = SongDoc(
             id = song.id,
             provider = if (song.source == "netease" || song.source == "qq") song.source else "",
@@ -255,6 +261,7 @@ object LyricsRepository {
             generatedAt = 0L,
             title = song.title,
             artist = song.artist,
+            language = language,
             lines = lines
         )
         withContext(Dispatchers.IO) {

@@ -5,7 +5,9 @@ import org.json.JSONObject
 
 /**
  * 歌曲文档：API 响应 = 客户端 songs 表 serverDoc/localDoc 列，同一结构（JSON 原文存储）。
- * 一行四字段（粤拼带调 / 粤拼不带调 / 普通话原词 / 中文谐音）。
+ * 一行四字段（注音 / 注音不带调 / 原文 / 中文谐音）。
+ * 字段名 jyutping/mandarin 沿用历史名，语义已泛化为「注音/原文」：
+ * yue=粤拼/普通话汉字写法，ko/ja=罗马音/韩日原文，由顶层 language 区分（yue|ko|ja）。
  *
  * serverDoc 存 API 响应原文（字节保真）；localDoc 存客户端序列化（provider/trackId 可空）。
  */
@@ -17,6 +19,7 @@ data class SongDoc(
     val generatedAt: Long = 0L,
     val title: String = "",
     val artist: String = "",
+    val language: String = "yue",
     val lines: List<LyricLine> = emptyList()
 ) {
     companion object {
@@ -42,6 +45,7 @@ data class SongDoc(
                 generatedAt = root.optLong("generatedAt", 0L),
                 title = root.optString("title", ""),
                 artist = root.optString("artist", ""),
+                language = root.optString("language", "yue").ifBlank { "yue" },
                 lines = lines
             )
         }
@@ -56,6 +60,7 @@ data class SongDoc(
                 put("generatedAt", doc.generatedAt)
                 put("title", doc.title)
                 put("artist", doc.artist)
+                put("language", doc.language)
                 put("lines", JSONArray().apply {
                     doc.lines.forEach { l ->
                         put(

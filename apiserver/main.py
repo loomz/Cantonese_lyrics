@@ -33,7 +33,7 @@ from app.songdoc import (
     load_doc,
 )
 
-app = FastAPI(title="Cantonese Lyrics API Server")
+app = FastAPI(title="Homophone Lyrics API Server")
 
 # Clients are phones / mini-programs on the LAN or the public internet:
 # allow everything for now (no auth on this service yet).
@@ -221,12 +221,12 @@ def apk_page():
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>粤语歌词 · 下载</title>
+<title>谐音歌词 · 下载</title>
 <style>{_APK_PAGE_STYLE}</style>
 </head>
 <body>
 <div class="card">
-  <h1>粤语歌词</h1>
+  <h1>谐音歌词</h1>
   <div class="ver">版本 {version} · {size_mb} MB</div>
   <a class="btn" href="/api/apk/download?v={code}">下载并安装</a>
   {changelog_html}

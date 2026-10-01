@@ -277,7 +277,7 @@ fun SettingsScreen(context: android.content.Context, onBack: () -> Unit) {
                     modifier = Modifier.padding(bottom = 24.dp)
                 ) {
                     Text("关于", color = Chrome.text, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                    Text("粤拼歌词", color = Chrome.muted, fontSize = 13.sp)
+                    Text("谐音歌词", color = Chrome.muted, fontSize = 13.sp)
                     Text(
                         "版本 v$currentName（code $currentCode）",
                         color = Chrome.muted,
