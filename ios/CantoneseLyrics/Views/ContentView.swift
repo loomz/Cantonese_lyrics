@@ -17,7 +17,7 @@ struct ContentView: View {
                 topBar
                 if let song = store.currentSong {
                     Text("\(song.title)  ·  \(song.artist)")
-                        .font(.system(size: 13))
+                        .font(.system(size: 16))
                         .foregroundStyle(theme.jyutping)
                         .lineLimit(1)
                         .padding(.horizontal, 48)

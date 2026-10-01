@@ -7,7 +7,7 @@ const list = [
   { name: '深夜蓝', background: '#0A1929', jyutping: '#5B7A99', mandarin: '#A8D8FF', homophone: '#7FA8CC' },
   { name: '日落橘', background: '#1A0E05', jyutping: '#9C6B3F', mandarin: '#FFB25E', homophone: '#C98A4B' },
   { name: '森林绿', background: '#07130B', jyutping: '#4F7A5A', mandarin: '#8FE3A1', homophone: '#6FA97C' },
-  { name: '樱花粉', background: '#FFF0F3', jyutping: '#B98A94', mandarin: '#C2185B', homophone: '#A05A6E' },
+  { name: '樱花粉', background: '#FFF0F3', jyutping: '#B98A94', mandarin: '#D6336C', homophone: '#A05A6E' },
   { name: '复古米', background: '#F5EFE0', jyutping: '#9C8F76', mandarin: '#5D4037', homophone: '#8D6E63' }
 ]
 

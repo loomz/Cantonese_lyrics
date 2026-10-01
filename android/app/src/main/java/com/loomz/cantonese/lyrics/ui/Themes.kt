@@ -16,8 +16,8 @@ val LyricsThemes = listOf(
     LyricsTheme("深夜蓝", Color(0xFF0A1929), Color(0xFF5B7A99), Color(0xFFA8D8FF), Color(0xFF7FA8CC)),
     LyricsTheme("日落橘", Color(0xFF1A0E05), Color(0xFF9C6B3F), Color(0xFFFFB25E), Color(0xFFC98A4B)),
     LyricsTheme("森林绿", Color(0xFF07130B), Color(0xFF4F7A5A), Color(0xFF8FE3A1), Color(0xFF6FA97C)),
-    LyricsTheme("樱花粉", Color(0xFFFFF0F3), Color(0xFFB98A94), Color(0xFFC2185B), Color(0xFFA05A6E)),
-    LyricsTheme("少女粉", Color(0xFFFFD6E5), Color(0xFFA0617A), Color(0xFFC2185B), Color(0xFF9C5A72)),
+    LyricsTheme("樱花粉", Color(0xFFFFF0F3), Color(0xFFB98A94), Color(0xFFD6336C), Color(0xFFA05A6E)),
+    LyricsTheme("少女粉", Color(0xFFFFD6E5), Color(0xFFA0617A), Color(0xFFD6336C), Color(0xFF9C5A72)),
     LyricsTheme("复古米", Color(0xFFF5EFE0), Color(0xFF9C8F76), Color(0xFF5D4037), Color(0xFF8D6E63))
 )
 

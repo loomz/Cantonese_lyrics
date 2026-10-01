@@ -41,6 +41,6 @@ let allThemes: [LyricsTheme] = [
     LyricsTheme(id: 1, name: "深夜蓝", bg: "#0A1929", jp: "#5B7A99", md: "#A8D8FF", hp: "#7FA8CC"),
     LyricsTheme(id: 2, name: "日落橘", bg: "#1A0E05", jp: "#9C6B3F", md: "#FFB25E", hp: "#C98A4B"),
     LyricsTheme(id: 3, name: "森林绿", bg: "#07130B", jp: "#4F7A5A", md: "#8FE3A1", hp: "#6FA97C"),
-    LyricsTheme(id: 4, name: "樱花粉", bg: "#FFF0F3", jp: "#B98A94", md: "#C2185B", hp: "#A05A6E"),
+    LyricsTheme(id: 4, name: "樱花粉", bg: "#FFF0F3", jp: "#B98A94", md: "#D6336C", hp: "#A05A6E"),
     LyricsTheme(id: 5, name: "复古米", bg: "#F5EFE0", jp: "#9C8F76", md: "#5D4037", hp: "#8D6E63")
 ]
