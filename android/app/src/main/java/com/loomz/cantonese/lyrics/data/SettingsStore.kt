@@ -7,10 +7,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.json.JSONObject
 
-/** 应用设置：歌词服务地址（apiserver）+ 粤拼声调显示 */
+/** 应用设置：歌词服务地址（apiserver）+ 粤拼声调显示 + 韩日语主行显示 */
 data class AppSettings(
     val apiserverUrl: String = "http://192.168.3.89:8000",
-    val showTone: Boolean = false
+    val showTone: Boolean = false,
+    val kojaRoma: Boolean = false // 韩日语主行：false=中文谐音，true=罗马音
 )
 
 object SettingsStore {
@@ -31,7 +32,8 @@ object SettingsStore {
                 val o = JSONObject(json)
                 settings = AppSettings(
                     apiserverUrl = o.optString("apiserverUrl", "http://192.168.3.89:8000"),
-                    showTone = o.optBoolean("showTone", false)
+                    showTone = o.optBoolean("showTone", false),
+                    kojaRoma = o.optBoolean("kojaRoma", false)
                 )
             } catch (_: Exception) {
             }
@@ -47,6 +49,7 @@ object SettingsStore {
                 JSONObject().apply {
                     put("apiserverUrl", s.apiserverUrl)
                     put("showTone", s.showTone)
+                    put("kojaRoma", s.kojaRoma)
                 }.toString()
             )
             .apply()

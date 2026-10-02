@@ -64,6 +64,7 @@ import kotlinx.coroutines.launch
 /** 应用入口界面：几乎全屏歌词 + 顶栏 列表/搜索 + 底栏 主题/上一首/下一首/设置 */
 @Composable
 fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
+    val context = LocalContext.current
     val themeIndex = SettingsStore.themeIndex
     val theme = LyricsThemes[themeIndex.coerceIn(0, LyricsThemes.size - 1)]
     val song = LyricsRepository.currentSong
@@ -96,6 +97,25 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
                     Icon(Icons.AutoMirrored.Filled.List, contentDescription = "最近列表", tint = Chrome.text)
                 }
                 Spacer(Modifier.weight(1f))
+                // 韩日语歌：罗马音/谐音 主行切换（激活=罗马音，高亮）
+                if (song != null && (song.language == "ko" || song.language == "ja")) {
+                    val kojaRoma = SettingsStore.settings.kojaRoma
+                    TextButton(
+                        onClick = {
+                            val ctx = context
+                            SettingsStore.saveSettings(ctx, SettingsStore.settings.copy(kojaRoma = !kojaRoma))
+                        },
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            if (kojaRoma) "罗马音" else "谐音",
+                            color = if (kojaRoma) Chrome.accent else Chrome.text,
+                            fontSize = 13.sp,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
+                }
                 IconButton(onClick = onOpenSearch) {
                     Icon(Icons.Default.Search, contentDescription = "搜索歌词", tint = Chrome.text)
                 }
@@ -112,13 +132,14 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
             }
 
             // ── 歌曲标题 + 语言标签（固定配色 + 半透明底，保证任意主题背景上可读） ──
+            // 标题 weight(1f) 占满剩余宽度（超长省略号），语言标签固定右缘不换行——
+            // 否则歌名/歌手一长会把标签挤到「粤语」两字折行
             if (song != null) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Chrome.bar)
                         .padding(horizontal = 48.dp, vertical = 2.dp),
-                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -127,7 +148,8 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
                         fontSize = 16.sp,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
                     )
                     languageLabel(song.language)?.let { label ->
                         Spacer(Modifier.width(6.dp))
@@ -135,6 +157,8 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
                             text = label,
                             color = Chrome.accent,
                             fontSize = 10.sp,
+                            maxLines = 1,
+                            softWrap = false,
                             modifier = Modifier
                                 .border(0.5.dp, Chrome.accent, RoundedCornerShape(4.dp))
                                 .padding(horizontal = 4.dp, vertical = 1.dp)
@@ -246,6 +270,8 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
                                 },
                                 // 粤语逐字对齐（去空格）；韩日语按词/读音单位，保留空格
                                 charAligned = song.language == "yue",
+                                // 韩日语主行二选一：false=中文谐音为主，true=罗马音为主
+                                romaPrimary = song.language != "yue" && SettingsStore.settings.kojaRoma,
                                 theme = theme
                             )
                         }
@@ -422,15 +448,17 @@ private fun calcLyricLetterSpacing(n: Int, availableW: Int): Float {
 }
 
 /**
- * 一句歌词：注音单独一行居中；原文 + 中文谐音两行逐字对齐（粤语）或保留空格（韩日语）。
- *
- * 对齐关键：中文是等宽字，把原文与谐音都去掉字间空格变成连续汉字后，两行字数
- * 相同时用「相同字号 + 相同字距 + 居中」即可逐字对齐。网易云原词无空格、谐音有空格，
- * 直接渲染会因两行宽度不同而错开，故统一去空格。字距按字数自适应（字少松、字多紧），
- * 让整行尽量不换行；字号固定 20sp 不变。英文/混合行（如整句英文）保留原样（含空格），
- * 用正常字距、允许换行。[charAligned]=false（韩日语）时不去空格——谐音按词/读音单位
- * 分隔，且日韩原文字符与谐音汉字并非等宽逐字对应，去空格反而破坏对齐。
- * 传入的 jyutping 已按「声调显示」设置选好版本。
+ * 一句歌词。三种布局：
+ * - 粤语（[charAligned]=true）：注音小字 + 原文大字 + 中文谐音大字，逐字对齐。
+ *   对齐关键：中文是等宽字，把原文与谐音都去掉字间空格变成连续汉字后，两行字数
+ *   相同时用「相同字号 + 相同字距 + 居中」即可逐字对齐。字距按字数自适应。
+ * - 韩日语·谐音主行（[charAligned]=false, [romaPrimary]=false）：原文小字对照 +
+ *   中文谐音大字主行（谐音缺失回退罗马音）。
+ * - 韩日语·罗马音主行（[romaPrimary]=true）：原文小字对照 + 罗马音大字主行
+ *   （罗马音缺失回退谐音）。
+ * 韩日语不去空格、不逐字对齐——谐音按词/读音单位分隔，且日韩原文字符与谐音
+ * 汉字并非等宽逐字对应，去空格反而破坏对齐。
+ * 传入的 jyutping 已按「声调显示」设置选好版本（韩日语即罗马音）。
  * 颜色随当前歌词主题（[theme]）变化——这是全 App 里唯一随主题变色的文字。
  */
 @Composable
@@ -438,6 +466,7 @@ fun LyricLineBlock(
     line: LyricLine,
     jyutping: String,
     charAligned: Boolean = true,
+    romaPrimary: Boolean = false,
     theme: LyricsTheme
 ) {
     val hasJ = jyutping.isNotBlank()
@@ -445,8 +474,65 @@ fun LyricLineBlock(
     val hasH = line.homophone.isNotBlank()
     if (!hasJ && !hasM && !hasH) return
 
-    // 中文行去空格（逐字对齐）；charAligned=false（韩日语）或英文/混合行保留原样
-    val cjk = charAligned && (isCjkLine(line.mandarin) || isCjkLine(line.homophone))
+    // ── 韩日语：原文小字对照 + 主行二选一（谐音/罗马音） ──
+    if (!charAligned) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (hasM) {
+                Text(
+                    text = line.mandarin,
+                    color = theme.mandarin,
+                    fontSize = 13.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+            // 主行：romaPrimary 选罗马音，缺失回退谐音（反之亦然）
+            if (romaPrimary) {
+                if (hasJ) {
+                    Text(
+                        text = jyutping,
+                        color = theme.jyutping,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                } else if (hasH) {
+                    Text(
+                        text = line.homophone,
+                        color = theme.homophone,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                if (hasH) {
+                    Text(
+                        text = line.homophone,
+                        color = theme.homophone,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                } else if (hasJ) {
+                    Text(
+                        text = jyutping,
+                        color = theme.jyutping,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+        return
+    }
+
+    // ── 粤语：注音小字 + 原文/谐音大字逐字对齐（原有布局不变） ──
+    // 中文行去空格（逐字对齐）；英文/混合行保留原样
+    val cjk = isCjkLine(line.mandarin) || isCjkLine(line.homophone)
     val mandarin = if (cjk) line.mandarin.replace(" ", "") else line.mandarin
     val homophone = if (cjk) line.homophone.replace(" ", "") else line.homophone
 
