@@ -16,14 +16,20 @@ Legacy (kept for the paused iOS / mini-program clients and debugging):
   GET  /api/lyrics/{provider}/{id}  -> cleaned lyric lines for a track
 """
 import json
+import logging
+from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
+
+# 业务日志（lyrics.* 命名空间），输出到 uvicorn 日志便于排查模型调用异常
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from app.g2p import get_pipeline, strip_tones
 from app.lyrics import get_provider, search_all
+from app.model_manager import model_manager
 from app.songdoc import (
     DATA_DIR,
     NoLyricsError,
@@ -85,6 +91,7 @@ def lyrics_search(q: str = Query(..., min_length=1), limit: int = Query(20, ge=1
 
 @app.get("/api/lyrics/{provider}/{track_id}")
 def lyrics_fetch(provider: str, track_id: str):
+    """取歌词（清洗后纯文本行）。"""
     p = get_provider(provider)
     if p is None:
         raise HTTPException(status_code=404, detail=f"未知歌词源: {provider}")
@@ -95,6 +102,32 @@ def lyrics_fetch(provider: str, track_id: str):
     if not lines:
         raise HTTPException(status_code=404, detail="该歌曲没有歌词")
     return {"title": title, "artist": artist, "lines": lines}
+
+
+@app.get("/api/lyrics/{provider}/{track_id}/rich")
+def lyrics_fetch_rich(provider: str, track_id: str):
+    """取歌词（富文本，含时间戳、官方罗马音）。
+
+    不触发 songdoc 生成管线，仅从歌词源拉原始数据。
+    返回结构：
+      { title, artist, lines: [{ ts: 毫秒 | null, text }], roma_by_index: { index: 官方罗马音 } }
+    """
+    p = get_provider(provider)
+    if p is None:
+        raise HTTPException(status_code=404, detail=f"未知歌词源: {provider}")
+    try:
+        title, artist, lines, roma_by_index = p.fetch_rich(track_id)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"获取歌词失败: {e}")
+    if not lines:
+        raise HTTPException(status_code=404, detail="该歌曲没有歌词")
+    # 转换 ts 为毫秒数字，方便前端直接使用
+    return {
+        "title": title,
+        "artist": artist,
+        "lines": [{"ts": ts, "text": text} for ts, text in lines],
+        "roma_by_index": {str(k): v for k, v in roma_by_index.items()},
+    }
 
 
 def _song_error(e: Exception) -> HTTPException:
@@ -203,6 +236,155 @@ def apk_download():
             "Expires": "0",
         },
     )
+
+
+# ── Admin API ──────────────────────────────────────────────────
+
+@app.get("/api/admin/lyrics/list")
+def admin_lyrics_list(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    provider: str = Query(None),
+    search: str = Query(None),
+):
+    """分页获取缓存歌词列表。"""
+    import json
+    from pathlib import Path
+
+    lyrics_dir = DATA_DIR / "lyrics"
+    if not lyrics_dir.exists():
+        return {"items": [], "total": 0, "page": page, "page_size": page_size}
+
+    # 收集所有歌词文件
+    all_songs = []
+    for f in lyrics_dir.glob("*.json"):
+        try:
+            doc = json.loads(f.read_text(encoding="utf-8"))
+            # 筛选 provider
+            if provider and doc.get("provider") != provider:
+                continue
+            # 搜索过滤
+            if search:
+                search_lower = search.lower()
+                title = doc.get("title", "").lower()
+                artist = doc.get("artist", "").lower()
+                if search_lower not in title and search_lower not in artist:
+                    continue
+            all_songs.append(doc)
+        except Exception:
+            continue
+
+    # 按生成时间倒序排序
+    all_songs.sort(key=lambda x: x.get("generatedAt", 0), reverse=True)
+
+    # 分页
+    total = len(all_songs)
+    start = (page - 1) * page_size
+    end = start + page_size
+    items = all_songs[start:end]
+
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size
+    }
+
+
+@app.get("/api/admin/lyrics/{provider}/{track_id}")
+def admin_lyrics_detail(provider: str, track_id: str):
+    """获取单个歌词详情。"""
+    doc = load_doc(provider, track_id)
+    if doc is None:
+        raise HTTPException(status_code=404, detail="歌词不存在")
+    return doc
+
+
+@app.delete("/api/admin/lyrics/{provider}/{track_id}")
+def admin_lyrics_delete(provider: str, track_id: str):
+    """删除缓存的歌词。"""
+    from pathlib import Path
+
+    lyrics_dir = DATA_DIR / "lyrics"
+    file_path = lyrics_dir / f"{provider}_{track_id}.json"
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="歌词不存在")
+
+    try:
+        file_path.unlink()
+        return {"success": True, "message": "删除成功"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"删除失败: {e}")
+
+
+@app.get("/api/admin/model/config")
+def admin_model_config():
+    """获取当前模型配置（所有可选模型 + 活动模型 + 自定义模型配置）。"""
+    return {
+        "models": model_manager.list_models(),
+        "active": model_manager.get_active_config()["name"],
+        "custom": model_manager.get_custom()
+    }
+
+
+class ModelSwitchRequest(BaseModel):
+    name: str  # glm / dashscope / longcat / custom
+
+
+@app.post("/api/admin/model/switch")
+def admin_model_switch(req: ModelSwitchRequest):
+    """切换活动模型。"""
+    if not model_manager.set_active(req.name):
+        raise HTTPException(status_code=400, detail=f"未知模型: {req.name}")
+    return {"success": True, "message": f"已切换到 {req.name}"}
+
+
+class ModelOverrideRequest(BaseModel):
+    name: str      # glm / dashscope / longcat（必须是云端模型）
+    model: str     # 覆盖的模型 ID（留空或无此字段则恢复预设值）
+    api_key: Optional[str] = None
+    label: Optional[str] = None
+
+
+@app.post("/api/admin/model/override")
+def admin_model_override(req: ModelOverrideRequest):
+    """保存云端模型的覆盖配置（model ID / key / label）。
+
+    用于在管理页面直接修改 dashscope 等云端模型的模型 ID。
+    不传 model 或传空字符串表示恢复为预设值。
+    """
+    if req.name not in ("glm", "dashscope", "longcat"):
+        raise HTTPException(status_code=400, detail="仅支持 glm / dashscope / longcat")
+    ok = model_manager.set_model_override(
+        req.name, req.model or None, req.api_key or None, req.label or None,
+    )
+    if not ok:
+        raise HTTPException(status_code=500, detail="保存失败")
+    return {"success": True, "message": f"已保存 {req.name} 的配置"}
+
+
+class CustomModelRequest(BaseModel):
+    api_url: str
+    model: str
+    api_key: Optional[str] = None
+    label: Optional[str] = None
+
+
+@app.post("/api/admin/model/custom")
+def admin_model_custom(req: CustomModelRequest):
+    """保存自定义模型配置（api_key 为空则保留原值）。"""
+    if not model_manager.set_custom(
+        req.api_url, req.model, req.api_key, req.label
+    ):
+        raise HTTPException(status_code=400, detail="api_url 和 model 必填")
+    return {"success": True, "message": "自定义模型配置已保存"}
+
+
+@app.get("/api/admin/model/status")
+def admin_model_status(request: Request, name: Optional[str] = Query(None)):
+    """健康检查（不传 name 检查活动模型，传 name 检查指定模型）。"""
+    return model_manager.check_health(name)
 
 
 @app.get("/apk", response_class=HTMLResponse)

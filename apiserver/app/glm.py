@@ -1,21 +1,21 @@
-"""GLM-5.3-Flash 谐音标注 / 罗马音转写（智谱 API，服务端调用）。
+"""谐音标注 / 罗马音转写（服务端调用）。
 
-key 不再内置在客户端：这里从环境变量 GLM_API_KEY 读取，未设置时用内置
-默认值兜底（本地零配置）。生产部署用 `docker run -e GLM_API_KEY=...` 注入，
-公网部署前建议把代码里的默认 key 移除。
+模型配置统一由 app.model_manager 管理（data/model_config.json）：
+  云端模型 glm / dashscope / longcat，或自定义模型（默认本地 llama-swap
+  + qwen3.8-27b）。在管理页面切换，或改配置文件 active 字段即生效，
+  无需重启（每次调用实时读取配置）。
 
 定位是纯「标注」任务：输入原词行数组，逐行输出中文谐音或罗马音，
 不生成/不修改原词。
 """
 import json
-import os
+import logging
 
 import httpx
 
-_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
-# 本地零配置兜底；生产请用环境变量 GLM_API_KEY 覆盖。
-_DEFAULT_KEY = "783275b708024d14bb4be9e4246004e0.UiDz1BIIZEotVX6W"
-_MODEL = "glm-5.3-flash"
+from .model_manager import model_manager
+
+logger = logging.getLogger("lyrics.glm")
 
 # ── 中文谐音 prompts ──────────────────────────────────────────────
 
@@ -76,38 +76,49 @@ class GlmError(Exception):
     """GLM 调用失败（网络 / HTTP / 解析）。"""
 
 
-def _api_key() -> str:
-    return os.environ.get("GLM_API_KEY") or _DEFAULT_KEY
-
-
 def _chat(user_prompt: str, system_prompt: str = _SYSTEM_PROMPT_YUE) -> str:
+    # 每次调用实时读取活动模型配置（页面切换 / 改配置文件即生效）
+    cfg = model_manager.get_active_config()
     body = {
-        "model": _MODEL,
+        "model": cfg["model"],
         "temperature": 0.3,
         "stream": False,
-        # 该模型始终带思考（reasoning），不支持关闭。用 OpenAI 风格 reasoning_effort
-        # 控制思考量：谐音标注是机械任务，用 low 档整首（几十行）约 20s 返回；
-        # 不传（默认高思考）会陷入超长思考，实测 >10 分钟仍不返回。
-        "reasoning_effort": "low",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
     }
+    # 模型特定的额外参数（如 glm-5.3-flash 的 reasoning_effort=low）
+    body.update(cfg.get("extra") or {})
+    headers = {}
+    if cfg.get("api_key"):
+        headers["Authorization"] = f"Bearer {cfg['api_key']}"
+    logger.info(
+        "模型调用: %s (%s) -> %s, 行数=%d",
+        cfg["name"], cfg["model"], cfg["api_url"],
+        len(user_prompt.splitlines()),
+    )
     # 每次调用新建 client：httpx.Client 非线程安全，避免跨请求复用连接池状态。
-    # low 档下整首标注通常 <30s；读超时 300s 作兜底，连接 15s。
+    # 整首标注通常 <30s；读超时 300s 作兜底，连接 15s。
     with httpx.Client(timeout=httpx.Timeout(300.0, connect=15.0)) as client:
-        r = client.post(
-            _API_URL,
-            headers={"Authorization": f"Bearer {_api_key()}"},
-            json=body,
-        )
+        r = client.post(cfg["api_url"], headers=headers, json=body)
     if r.status_code // 100 != 2:
-        raise GlmError(f"GLM HTTP {r.status_code}：{r.text[:200]}")
-    try:
-        return r.json()["choices"][0]["message"]["content"]
-    except Exception as e:
-        raise GlmError(f"无法解析模型响应：{r.text[:200]}") from e
+        logger.error("模型 HTTP %s: %s", r.status_code, r.text[:300])
+        raise GlmError(
+            f"{cfg['name']} HTTP {r.status_code}：{r.text[:200]}"
+        )
+    data = r.json()
+    msg = data["choices"][0]["message"]
+    content = msg.get("content") or ""
+    finish = data["choices"][0].get("finish_reason")
+    # 本地模型可能把内容塞进 reasoning_content 或返回空 content，记日志便于排查
+    if not content.strip():
+        logger.warning(
+            "模型返回空 content (finish_reason=%s, reasoning=%r)",
+            finish, (msg.get("reasoning_content") or "")[:200],
+        )
+    logger.info("模型返回: finish_reason=%s, content_len=%d", finish, len(content))
+    return content
 
 
 def annotate(lines: list[str], language: str = "yue") -> list[str]:
@@ -166,13 +177,16 @@ def parse_homophones(content: str) -> list[str]:
     start = text.find("{")
     end = text.rfind("}")
     if start < 0 or end <= start:
-        raise GlmError("模型返回中未找到 JSON，请重试")
+        logger.error("解析失败(无 JSON)，原始返回: %r", content[:500])
+        raise GlmError(f"模型返回中未找到 JSON（原始返回: {content[:200]!r}），请重试")
     try:
         root = json.loads(text[start : end + 1])
     except Exception as e:
-        raise GlmError("模型返回的 JSON 解析失败，请重试") from e
+        logger.error("JSON 解析失败: %s, 片段: %r", e, text[start:end+1][:300])
+        raise GlmError(f"模型返回的 JSON 解析失败（{text[start:end+1][:100]!r}），请重试") from e
     arr = root.get("lines") or []
     out = [str(x).strip() for x in arr]
     if not out:
-        raise GlmError("模型返回的谐音为空，请重试")
+        logger.error("谐音为空，原始返回: %r", content[:500])
+        raise GlmError(f"模型返回的谐音为空（原始返回: {content[:200]!r}），请重试")
     return out

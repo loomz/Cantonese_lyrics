@@ -44,7 +44,9 @@ data class SongEntity(
     val createdAt: Long = 0L,
     val lastOpenedAt: Long = 0L,
     val serverDoc: String? = null, // 服务端版歌词（JSON 原文）
-    val localDoc: String? = null // 用户本地编辑版歌词（JSON 原文）
+    val localDoc: String? = null, // 用户本地编辑版歌词（JSON 原文）
+    val genStatus: Int = 0, // 0=idle, 1=generating, 2=success, 3=failed
+    val genError: String? = null // 生成失败时的错误信息
 )
 
 /** 元数据投影：列表/搜索/最近 用，不含歌词内容列（懒加载）。 */
@@ -111,9 +113,12 @@ interface LyricsDao {
 
     @Query("UPDATE songs SET serverVersion = :v WHERE id = :id")
     fun setServerVersion(id: String, v: Int)
+
+    @Query("UPDATE songs SET genStatus = :status, genError = :error WHERE id = :id")
+    fun setGenStatus(id: String, status: Int, error: String?)
 }
 
-@Database(entities = [SongEntity::class], version = 2, exportSchema = false)
+@Database(entities = [SongEntity::class], version = 3, exportSchema = false)
 abstract class LyricsDatabase : RoomDatabase() {
     abstract fun dao(): LyricsDao
 
@@ -125,6 +130,14 @@ abstract class LyricsDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE songs ADD COLUMN serverDoc TEXT")
                 db.execSQL("ALTER TABLE songs ADD COLUMN localDoc TEXT")
+            }
+        }
+
+        /** v2 → v3：新增 genStatus / genError 列（异步生成状态）。 */
+        val MIGRATION_2_3 = object : androidx.room.migration.Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE songs ADD COLUMN genStatus INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE songs ADD COLUMN genError TEXT")
             }
         }
     }

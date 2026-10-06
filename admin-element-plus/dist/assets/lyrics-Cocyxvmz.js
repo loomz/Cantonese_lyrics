@@ -1,0 +1,1 @@
+import{r as t}from"./index-BisdVtRi.js";const i={getList(e){return t.get("/admin/lyrics/list",{params:e})},getDetail(e,r){return t.get(`/admin/lyrics/${e}/${r}`)},refresh(e,r){return t.post(`/song/${e}/${r}/refresh`)},delete(e,r){return t.delete(`/admin/lyrics/${e}/${r}`)}};export{i as l};

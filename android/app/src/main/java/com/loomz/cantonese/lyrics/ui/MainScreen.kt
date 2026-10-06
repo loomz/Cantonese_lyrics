@@ -97,20 +97,51 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
                     Icon(Icons.AutoMirrored.Filled.List, contentDescription = "最近列表", tint = Chrome.text)
                 }
                 Spacer(Modifier.weight(1f))
-                // 韩日语歌：罗马音/谐音 主行切换（激活=罗马音，高亮）
-                if (song != null && (song.language == "ko" || song.language == "ja")) {
-                    val kojaRoma = SettingsStore.settings.kojaRoma
+                // 粤语歌：显示模式切换
+                if (song != null && song.language == "yue") {
+                    val mode = SettingsStore.settings.yueDisplayMode
                     TextButton(
                         onClick = {
                             val ctx = context
-                            SettingsStore.saveSettings(ctx, SettingsStore.settings.copy(kojaRoma = !kojaRoma))
+                            val next = (mode + 1) % 4
+                            SettingsStore.saveSettings(ctx, SettingsStore.settings.copy(yueDisplayMode = next))
                         },
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            if (kojaRoma) "罗马音" else "谐音",
-                            color = if (kojaRoma) Chrome.accent else Chrome.text,
-                            fontSize = 13.sp,
+                            when (mode) {
+                                0 -> "粤拼+中文"
+                                1 -> "谐音+中文"
+                                2 -> "粤拼带调+中文+谐音"
+                                else -> "粤拼不带调+中文+谐音"
+                            },
+                            color = Chrome.accent,
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
+                }
+                // 韩日语歌：显示模式切换
+                if (song != null && (song.language == "ko" || song.language == "ja")) {
+                    val mode = SettingsStore.settings.kojaDisplayMode
+                    TextButton(
+                        onClick = {
+                            val ctx = context
+                            val next = (mode + 1) % 4
+                            SettingsStore.saveSettings(ctx, SettingsStore.settings.copy(kojaDisplayMode = next))
+                        },
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            when (mode) {
+                                0 -> "谐音+原文"
+                                1 -> "罗马音+原文"
+                                2 -> "谐音+罗马音+原文"
+                                else -> "罗马音+谐音+原文"
+                            },
+                            color = Chrome.accent,
+                            fontSize = 12.sp,
                             maxLines = 1,
                             softWrap = false
                         )
@@ -230,7 +261,8 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
             }
 
             // ── 歌词主体（几乎全屏，唯一随主题变化的区域） ──
-            val showTone = SettingsStore.settings.showTone
+            val yueMode = SettingsStore.settings.yueDisplayMode
+            val kojaMode = SettingsStore.settings.kojaDisplayMode
             val listState = rememberLazyListState()
             LaunchedEffect(song?.id) { listState.scrollToItem(0) }
             LaunchedEffect(song?.id) {
@@ -262,16 +294,11 @@ fun MainScreen(onOpenSearch: () -> Unit, onOpenSettings: () -> Unit) {
                         Box(modifier = rowModifier) {
                             LyricLineBlock(
                                 line = line,
-                                // 按设置选注音版本；旧数据缺某版时回退另一版
-                                jyutping = if (showTone) {
-                                    line.jyutping.ifBlank { line.jyutpingToneless }
-                                } else {
-                                    line.jyutpingToneless.ifBlank { line.jyutping }
-                                },
-                                // 粤语逐字对齐（去空格）；韩日语按词/读音单位，保留空格
+                                jyutping = line.jyutping,
+                                jyutpingToneless = line.jyutpingToneless,
                                 charAligned = song.language == "yue",
-                                // 韩日语主行二选一：false=中文谐音为主，true=罗马音为主
-                                romaPrimary = song.language != "yue" && SettingsStore.settings.kojaRoma,
+                                displayMode = if (song.language == "yue") yueMode else kojaMode,
+                                isYue = song.language == "yue",
                                 theme = theme
                             )
                         }
@@ -448,134 +475,103 @@ private fun calcLyricLetterSpacing(n: Int, availableW: Int): Float {
 }
 
 /**
- * 一句歌词。三种布局：
- * - 粤语（[charAligned]=true）：注音小字 + 原文大字 + 中文谐音大字，逐字对齐。
- *   对齐关键：中文是等宽字，把原文与谐音都去掉字间空格变成连续汉字后，两行字数
- *   相同时用「相同字号 + 相同字距 + 居中」即可逐字对齐。字距按字数自适应。
- * - 韩日语·谐音主行（[charAligned]=false, [romaPrimary]=false）：原文小字对照 +
- *   中文谐音大字主行（谐音缺失回退罗马音）。
- * - 韩日语·罗马音主行（[romaPrimary]=true）：原文小字对照 + 罗马音大字主行
- *   （罗马音缺失回退谐音）。
- * 韩日语不去空格、不逐字对齐——谐音按词/读音单位分隔，且日韩原文字符与谐音
- * 汉字并非等宽逐字对应，去空格反而破坏对齐。
- * 传入的 jyutping 已按「声调显示」设置选好版本（韩日语即罗马音）。
- * 颜色随当前歌词主题（[theme]）变化——这是全 App 里唯一随主题变色的文字。
+ * 一句歌词。支持多种显示模式：
+ *
+ * 粤语（isYue=true）：
+ * - Mode 0: 粤拼+中文（2行）
+ * - Mode 1: 谐音+中文（2行）
+ * - Mode 2: 粤拼带调+中文+谐音（3行）
+ * - Mode 3: 粤拼不带调+中文+谐音（3行）
+ *
+ * 韩日语（isYue=false）：
+ * - Mode 0: 谐音+原文（2行）
+ * - Mode 1: 罗马音+原文（2行）
+ * - Mode 2: 谐音+罗马音+原文（3行）
+ * - Mode 3: 罗马音+谐音+原文（3行）
+ *
+ * 粤语逐字对齐：中文是等宽字，把原文与谐音都去掉字间空格变成连续汉字后，
+ * 两行字数相同时用「相同字号 + 相同字距 + 居中」即可逐字对齐。
+ * 韩日语不去空格、不逐字对齐——谐音按词/读音单位分隔。
+ * 颜色随当前歌词主题（[theme]）变化。
  */
 @Composable
 fun LyricLineBlock(
     line: LyricLine,
-    jyutping: String,
+    jyutping: String = "",
+    jyutpingToneless: String = "",
     charAligned: Boolean = true,
-    romaPrimary: Boolean = false,
+    displayMode: Int = 0,
+    isYue: Boolean = true,
     theme: LyricsTheme
 ) {
     val hasJ = jyutping.isNotBlank()
+    val hasJT = jyutpingToneless.isNotBlank()
     val hasM = line.mandarin.isNotBlank()
     val hasH = line.homophone.isNotBlank()
-    if (!hasJ && !hasM && !hasH) return
+    if (!hasJ && !hasJT && !hasM && !hasH) return
 
-    // ── 韩日语：原文小字对照 + 主行二选一（谐音/罗马音） ──
-    if (!charAligned) {
+    if (isYue) {
+        // ── 粤语显示模式 ──
+        val cjk = isCjkLine(line.mandarin) || isCjkLine(line.homophone)
+        val mandarin = if (cjk) line.mandarin.replace(" ", "") else line.mandarin
+        val homophone = if (cjk) line.homophone.replace(" ", "") else line.homophone
+        val letterSpacing: Float = if (cjk) {
+            val config = LocalConfiguration.current
+            val availableW = (config.screenWidthDp - 60).coerceAtLeast(160)
+            calcLyricLetterSpacing(maxOf(mandarin.length, homophone.length), availableW)
+        } else 0f
+
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (hasM) {
-                Text(
-                    text = line.mandarin,
-                    color = theme.mandarin,
-                    fontSize = 13.sp,
-                    textAlign = TextAlign.Center
-                )
-            }
-            // 主行：romaPrimary 选罗马音，缺失回退谐音（反之亦然）
-            if (romaPrimary) {
-                if (hasJ) {
-                    Text(
-                        text = jyutping,
-                        color = theme.jyutping,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                } else if (hasH) {
-                    Text(
-                        text = line.homophone,
-                        color = theme.homophone,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
+            when (displayMode) {
+                0 -> { // 粤拼+中文
+                    if (hasJ) Text(text = jyutping, color = theme.jyutping, fontSize = 13.sp, letterSpacing = 1.sp, textAlign = TextAlign.Center)
+                    if (hasM) Text(text = mandarin, color = theme.mandarin, fontSize = 20.sp, fontWeight = FontWeight.Bold, letterSpacing = letterSpacing.sp, textAlign = TextAlign.Center)
                 }
-            } else {
-                if (hasH) {
-                    Text(
-                        text = line.homophone,
-                        color = theme.homophone,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                } else if (hasJ) {
-                    Text(
-                        text = jyutping,
-                        color = theme.jyutping,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
+                1 -> { // 谐音+中文
+                    if (hasH) Text(text = homophone, color = theme.homophone, fontSize = 20.sp, fontWeight = FontWeight.Bold, letterSpacing = letterSpacing.sp, textAlign = TextAlign.Center)
+                    if (hasM) Text(text = mandarin, color = theme.mandarin, fontSize = 20.sp, fontWeight = FontWeight.Bold, letterSpacing = letterSpacing.sp, textAlign = TextAlign.Center)
+                }
+                2 -> { // 粤拼带调+中文+谐音
+                    if (hasJ) Text(text = jyutping, color = theme.jyutping, fontSize = 13.sp, letterSpacing = 1.sp, textAlign = TextAlign.Center)
+                    if (hasM) Text(text = mandarin, color = theme.mandarin, fontSize = 20.sp, fontWeight = FontWeight.Bold, letterSpacing = letterSpacing.sp, textAlign = TextAlign.Center)
+                    if (hasH) Text(text = homophone, color = theme.homophone, fontSize = 20.sp, letterSpacing = letterSpacing.sp, textAlign = TextAlign.Center)
+                }
+                else -> { // 粤拼不带调+中文+谐音
+                    if (hasJT) Text(text = jyutpingToneless, color = theme.jyutping, fontSize = 13.sp, letterSpacing = 1.sp, textAlign = TextAlign.Center)
+                    if (hasM) Text(text = mandarin, color = theme.mandarin, fontSize = 20.sp, fontWeight = FontWeight.Bold, letterSpacing = letterSpacing.sp, textAlign = TextAlign.Center)
+                    if (hasH) Text(text = homophone, color = theme.homophone, fontSize = 20.sp, letterSpacing = letterSpacing.sp, textAlign = TextAlign.Center)
                 }
             }
         }
-        return
-    }
-
-    // ── 粤语：注音小字 + 原文/谐音大字逐字对齐（原有布局不变） ──
-    // 中文行去空格（逐字对齐）；英文/混合行保留原样
-    val cjk = isCjkLine(line.mandarin) || isCjkLine(line.homophone)
-    val mandarin = if (cjk) line.mandarin.replace(" ", "") else line.mandarin
-    val homophone = if (cjk) line.homophone.replace(" ", "") else line.homophone
-
-    // 中文行按字数自适应字距尽量不换行；英文行正常字距、允许换行
-    val letterSpacing: Float = if (cjk) {
-        val config = LocalConfiguration.current
-        val availableW = (config.screenWidthDp - 60).coerceAtLeast(160)
-        calcLyricLetterSpacing(maxOf(mandarin.length, homophone.length), availableW)
     } else {
-        0f
-    }
-
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (hasJ) {
-            Text(
-                text = jyutping,
-                color = theme.jyutping,
-                fontSize = 13.sp,
-                letterSpacing = 1.sp,
-                textAlign = TextAlign.Center
-            )
-        }
-        if (hasM) {
-            Text(
-                text = mandarin,
-                color = theme.mandarin,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = letterSpacing.sp,
-                textAlign = TextAlign.Center
-            )
-        }
-        if (hasH) {
-            Text(
-                text = homophone,
-                color = theme.homophone,
-                fontSize = 20.sp,
-                letterSpacing = letterSpacing.sp,
-                textAlign = TextAlign.Center
-            )
+        // ── 韩日语显示模式 ──
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            when (displayMode) {
+                0 -> { // 谐音+原文
+                    if (hasH) Text(text = line.homophone, color = theme.homophone, fontSize = 20.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                    if (hasM) Text(text = line.mandarin, color = theme.mandarin, fontSize = 13.sp, textAlign = TextAlign.Center)
+                }
+                1 -> { // 罗马音+原文
+                    if (hasJ) Text(text = jyutping, color = theme.jyutping, fontSize = 20.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                    if (hasM) Text(text = line.mandarin, color = theme.mandarin, fontSize = 13.sp, textAlign = TextAlign.Center)
+                }
+                2 -> { // 谐音+罗马音+原文
+                    if (hasH) Text(text = line.homophone, color = theme.homophone, fontSize = 20.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                    if (hasJ) Text(text = jyutping, color = theme.jyutping, fontSize = 13.sp, textAlign = TextAlign.Center)
+                    if (hasM) Text(text = line.mandarin, color = theme.mandarin, fontSize = 13.sp, textAlign = TextAlign.Center)
+                }
+                else -> { // 罗马音+谐音+原文
+                    if (hasJ) Text(text = jyutping, color = theme.jyutping, fontSize = 20.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                    if (hasH) Text(text = line.homophone, color = theme.homophone, fontSize = 13.sp, textAlign = TextAlign.Center)
+                    if (hasM) Text(text = line.mandarin, color = theme.mandarin, fontSize = 13.sp, textAlign = TextAlign.Center)
+                }
+            }
         }
     }
 }

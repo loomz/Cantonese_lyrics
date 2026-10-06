@@ -130,7 +130,9 @@ def generate_song(provider: str, track_id: str, force: bool = False) -> tuple[di
 
         old = load_doc(provider, track_id) if force else None
         try:
-            title, artist, lines, roma = p.fetch_rich(track_id)
+            title, artist, ts_lines, roma = p.fetch_rich(track_id)
+            # fetch_rich 返回 [(ts, text), ...]，songdoc 只需要 text
+            lines = [text for _, text in ts_lines]
         except Exception as e:
             raise UpstreamError(f"获取歌词失败: {e}") from e
         if not lines:

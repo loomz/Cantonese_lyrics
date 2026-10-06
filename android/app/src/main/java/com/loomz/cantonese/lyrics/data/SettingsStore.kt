@@ -7,11 +7,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.json.JSONObject
 
-/** 应用设置：歌词服务地址（apiserver）+ 粤拼声调显示 + 韩日语主行显示 */
+/** 应用设置：歌词服务地址（apiserver）+ 粤拼声调显示 + 韩日语主行显示 + 显示模式 */
 data class AppSettings(
     val apiserverUrl: String = "http://192.168.3.89:8000",
     val showTone: Boolean = false,
-    val kojaRoma: Boolean = false // 韩日语主行：false=中文谐音，true=罗马音
+    val kojaRoma: Boolean = false, // 韩日语主行：false=中文谐音，true=罗马音
+    // 粤语显示模式：0=粤拼+中文, 1=谐音+中文, 2=粤拼带调+中文+谐音, 3=粤拼不带调+中文+谐音
+    val yueDisplayMode: Int = 2,
+    // 韩日语显示模式：0=谐音+原文, 1=罗马音+原文, 2=谐音+罗马音+原文, 3=罗马音+谐音+原文
+    val kojaDisplayMode: Int = 0
 )
 
 object SettingsStore {
@@ -33,7 +37,9 @@ object SettingsStore {
                 settings = AppSettings(
                     apiserverUrl = o.optString("apiserverUrl", "http://192.168.3.89:8000"),
                     showTone = o.optBoolean("showTone", false),
-                    kojaRoma = o.optBoolean("kojaRoma", false)
+                    kojaRoma = o.optBoolean("kojaRoma", false),
+                    yueDisplayMode = o.optInt("yueDisplayMode", 2),
+                    kojaDisplayMode = o.optInt("kojaDisplayMode", 0)
                 )
             } catch (_: Exception) {
             }
@@ -50,6 +56,8 @@ object SettingsStore {
                     put("apiserverUrl", s.apiserverUrl)
                     put("showTone", s.showTone)
                     put("kojaRoma", s.kojaRoma)
+                    put("yueDisplayMode", s.yueDisplayMode)
+                    put("kojaDisplayMode", s.kojaDisplayMode)
                 }.toString()
             )
             .apply()

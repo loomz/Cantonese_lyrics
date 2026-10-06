@@ -25,11 +25,14 @@ PORT="${PORT:-8000}"
 MODULE="main:app"
 
 # ── 工具函数 ──
+# 运行中 = PID 文件存在，且该 PID 存活、cmdline 确为 uvicorn
+# （防 PID 被系统复用后误判：kill -0 对任意存活进程都成功）。
 is_running() {
   [[ -f "$PID_FILE" ]] || return 1
   local pid
   pid="$(cat "$PID_FILE" 2>/dev/null || true)"
-  [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null
+  [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null \
+    && tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -q uvicorn
 }
 
 # 服务本身不自动读 .env，这里按 .env.example 的说明用 shell 注入

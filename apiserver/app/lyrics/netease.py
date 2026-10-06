@@ -80,9 +80,10 @@ class NeteaseProvider(LyricsProvider):
 
     def fetch_rich(
         self, track_id: str
-    ) -> tuple[str, str, list[str], dict[int, str]]:
+    ) -> tuple[str, str, list[tuple[int | None, str]], dict[int, str]]:
         """同 fetch，另附官方罗马音 roma_by_index（romalrc 按时间戳对齐）。
 
+        返回的 lines 为 [(ts_ms | None, text), ...] 格式，保留每行首个时间戳。
         romalrc 毫秒位数可能不一（[00:29.62] vs [00:29.620]）→ 归一化匹配；
         行数可多于 lrc（卡拉OK同时间戳多行）→ map 取首条命中。
         对不上的行省略 key，由调用方（songdoc）GLM 兜底。
@@ -91,7 +92,6 @@ class NeteaseProvider(LyricsProvider):
         lrc = ((data.get("lrc") or {}).get("lyric")) or ""
         roma_raw = ((data.get("romalrc") or {}).get("lyric")) or ""
         ts_lines = clean_lrc_with_ts(lrc)
-        lines = [text for _, text in ts_lines]
         title, artist = self._detail_meta(track_id)
 
         roma_by_index: dict[int, str] = {}
@@ -103,7 +103,7 @@ class NeteaseProvider(LyricsProvider):
                 roma = roma_map.get(ts, "")
                 if roma.strip():
                     roma_by_index[i] = roma
-        return title, artist, lines, roma_by_index
+        return title, artist, ts_lines, roma_by_index
 
         # Title/artist are best-effort: the client already has them from the
         # search result, so a failure here must not break the fetch.
